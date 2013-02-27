@@ -1,0 +1,13 @@
+Latitude:-21.198696
+Longitude:-47.77111
+Data:1/2/2013
+Hora:7:8:7
+Coletor:Joissy
+Fazenda:Aparecida
+Talhao:0
+Lote:005
+Esp:REAL
+Exibe_Cep:NAO
+Ha_Grf_Ont:SIM
+
+NOVA LINHA
