@@ -1,0 +1,190 @@
+program Test;
+
+const
+        ALTURA_BARRA_TITULO 	= 20;
+        ESPACAMENTO 		= 10;
+        TAMANHO_BORDA 		= 4;
+        AMOSTRAGEM_ARQUIVO 	= 'Resources\Plantio_13_2_20137_28_57.txt';
+  
+var
+	t 			: TForm;
+	l 			: TLabel;
+	b 			: TButton;
+ 	btnListarArquivos	: TButton;
+	btnCarregarArquivo  : TButton;
+	p 			: TPanel;
+	mmO 			: TMemo;
+	files: TListBox;
+	mmR 			: TMemo;
+
+procedure ExibirListaArquivos(Sender: TObject);
+var
+   i : Integer;
+   str : string;
+   strArquivo : string;
+   stlLista   : TStrings;
+begin
+     str := ExtractFilePath(AMOSTRAGEM_ARQUIVO);
+     strArquivo := StringReplace(AMOSTRAGEM_ARQUIVO, str, '---> ', [rfReplaceAll]);
+
+     ShowMessageFmt('Diretorio selecionado: %s', [str]);
+     
+     stlLista := ListarArquivos(str, '*.*');
+     try
+       files.Items.Clear;
+       for i := 0 to stlLista.Count - 1 do
+       begin
+          files.Items.Add(stlLista[i]);
+       end;
+     
+       ShowMessage('Numero de arquivos: ' + IntToStr(stlLista.Count));
+     finally
+       stlLista.Free;
+     end;
+end;
+
+procedure SepararDados(Sender: TObject);
+var
+	intLinha    	: Integer;
+    sl	        : TStringList;
+	vField, vValue: String;
+begin
+  sl := TStringList.Create;
+  try
+	mmR.Lines.Clear;
+	
+	for intLinha := 0 to mmO.Lines.Count - 1 do
+	begin
+		if Pos(':', mmO.Lines[intLinha]) > 0 then
+		begin
+		    vField := copy( mmO.Lines[intLinha], 0, Pos(':', mmO.Lines[intLinha])-1 );        	
+			vValue := copy( mmO.Lines[intLinha], Pos(':', mmO.Lines[intLinha])+1, length(mmO.Lines[intLinha]));
+			
+			if SameText(vField, 'DATA') then
+			begin
+			     vValue := formatdatetime('DD/MM/YYYY', strtodate(vValue));
+			end;
+
+			if SameText(vField, 'HORA') then
+			begin
+                 vValue := formatdatetime('HH:MM:SS', strtotime(vValue));
+			end;
+
+            mmR.Lines.Add(vField + '-->' + vValue);
+		end;
+	end;
+  finally
+	sl.Free;
+  end;
+end;
+
+procedure CarregarArquivo(Sender: TObject);
+var
+	vFileName: String;
+begin
+	if files.ItemIndex >= 0 then
+	begin
+		vFileName := files.items[files.ItemIndex];
+		ShowMessageFmt('Carregando arquivo: %s', [vFileName]);
+		mmO.Lines.LoadFromFile(vFileName);
+	end
+	else
+	  RaiseException(Exception.Create('Selecione um arquivo.'));
+end;
+
+procedure CreateForm;
+begin
+    t := TForm.Create(Self);
+	t.Caption := 'Titulo Novo';
+	t.left := (Application.MainForm.ClientWidth div 2);
+	t.Position := poScreenCenter;
+	t.Height := 550;
+	t.Width := 600;
+
+	l := TLabel.Create(t);
+	l.Parent := t;
+	l.caption := 'E';
+	l.Left := ESPACAMENTO;
+	l.Top := ESPACAMENTO;
+
+	// Criar um PANEL
+	p := TPanel.Create(t);
+	p.parent := t;
+	p.Top := l.Top + l.Height + ESPACAMENTO; //Abaixo do label;
+	p.Width := t.Width - ESPACAMENTO - TAMANHO_BORDA;
+	p.Height := (t.Height - p.Top - ALTURA_BARRA_TITULO - ESPACAMENTO);
+	p.Left := ((t.Width - p.Width) div 2) - TAMANHO_BORDA;
+
+	// Um BOTAO no centro do panel
+	b := TButton.Create(t);
+	b.Parent := p;
+	b.width := 150;
+	b.height := 30;
+	b.left := p.width - ESPACAMENTO - b.width;
+	b.top := p.height - ALTURA_BARRA_TITULO - b.Height + 5;
+	b.visible := True;
+	b.caption := 'Separar os Dados';
+	b.enabled := not (UpperCase(l.Caption) = 'D'); // Quero desabilitar este botao caso o LABEL acima seja "D"
+	b.OnClick := @SepararDados;
+
+	// Um BOTAO no centro do panel
+	btnListarArquivos 		:= TButton.Create(t);
+	btnListarArquivos.Parent 	:= p;
+	btnListarArquivos.width 	:= 100;
+	btnListarArquivos.height 	:= 30;
+	btnListarArquivos.left 		:= ESPACAMENTO;
+	btnListarArquivos.top 		:= p.height - ALTURA_BARRA_TITULO - b.Height + 5;
+	btnListarArquivos.visible 	:= True;
+	btnListarArquivos.caption 	:= 'Listar Arquivos';
+	btnListarArquivos.enabled 	:= True; // Quero desabilitar este botao caso o LABEL acima seja "D"
+	btnListarArquivos.OnClick 	:= @ExibirListaArquivos;
+	
+	btnCarregarArquivo := TButton.Create(t);
+	btnCarregarArquivo.Parent 	:= p;
+	btnCarregarArquivo.width 	:= 100;
+	btnCarregarArquivo.height 	:= 30;
+	btnCarregarArquivo.left 		:= btnListarArquivos.left + btnListarArquivos.width + ESPACAMENTO;
+	btnCarregarArquivo.top 		:= p.height - ALTURA_BARRA_TITULO - b.Height + 5;
+	btnCarregarArquivo.visible 	:= True;
+	btnCarregarArquivo.caption 	:= 'Carregar Arquivo';
+	btnCarregarArquivo.enabled 	:= True; 
+	btnCarregarArquivo.OnClick 	:= @CarregarArquivo;
+	
+	mmO := TMemo.Create(p);
+	mmO.Parent := p;
+	mmO.ScrollBars := ssVertical;
+	mmO.Left := ESPACAMENTO;
+	mmO.Top := ESPACAMENTO;
+	mmO.Height := (p.height div 2) - ALTURA_BARRA_TITULO - b.height - ESPACAMENTO;
+	mmO.Width := p.width - ESPACAMENTO - 15;
+
+	files := TListBox.Create(p);
+	files.Parent := p;
+	files.Left := ESPACAMENTO;
+	files.Top := ESPACAMENTO + mmo.height + 10;
+	files.Height := (p.height div 2) - ALTURA_BARRA_TITULO - b.height - ESPACAMENTO;
+	files.Width := (p.width div 2) - ESPACAMENTO - 15;
+
+	mmR := TMemo.Create(p);
+	mmR.Parent := p;
+	mmR.ScrollBars := ssVertical;
+	mmR.Left := files.width + ESPACAMENTO + 15;
+	mmR.Top := ESPACAMENTO + mmo.height + 10;
+	mmR.Height := (p.height div 2) - ALTURA_BARRA_TITULO - b.height - ESPACAMENTO;
+	mmR.Width := mmO.width - ((p.width div 2) - ESPACAMENTO - 15) - 15;
+end;
+
+begin
+	if messagedlg('Continuar a aplicação?', mtConfirmation, [mbYes, mbNo], 0) = mrNo then
+	begin
+	   ShowMessage('Aplicação encerrada.');
+	   Exit;
+	end;   
+	
+	CreateForm;
+	try
+	  t.ShowModal;
+    finally
+	  t.Free;
+	end;
+end.
