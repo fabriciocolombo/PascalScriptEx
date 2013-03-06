@@ -34,7 +34,6 @@ object Frm_Editor: TFrm_Editor
     ScrollBars = ssVertical
     TabOrder = 0
     WordWrap = False
-    ExplicitTop = 321
   end
   object Editor: TSynEdit
     Left = 0
@@ -69,8 +68,6 @@ object Frm_Editor: TFrm_Editor
     Options = [eoAutoIndent, eoDragDropEditing, eoDropFiles, eoEnhanceEndKey, eoGroupUndo, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
     WantTabs = True
     FontSmoothing = fsmNone
-    ExplicitTop = -3
-    ExplicitHeight = 318
   end
   object SynPasSyn: TSynPasSyn
     Options.AutoDetectEnabled = False
@@ -102,109 +99,96 @@ object Frm_Editor: TFrm_Editor
     Filter = 'ROPS Files|*.ROPS|Compiled Files|*.Comp'
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Left = 96
-    Top = 376
+    Top = 336
   end
   object SaveDialog1: TSaveDialog
     DefaultExt = 'ROPS'
     Filter = 'ROPS Files|*.ROPS|Compiled Files|*.Comp'
     Options = [ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Left = 128
-    Top = 376
+    Top = 336
   end
   object MainMenu1: TMainMenu
     Left = 32
-    Top = 376
+    Top = 336
     object File1: TMenuItem
       Caption = '&File'
       object New1: TMenuItem
-        Caption = '&New'
-        ShortCut = 16462
+        Action = acNew
       end
       object N3: TMenuItem
         Caption = '-'
       end
       object Open1: TMenuItem
-        Caption = '&Open...'
-        ShortCut = 16463
-        OnClick = Open1Click
+        Action = acOpen
       end
       object Save1: TMenuItem
-        Caption = '&Save'
-        ShortCut = 16467
+        Action = acSave
       end
       object Saveas1: TMenuItem
-        Caption = 'Save &as...'
+        Action = acSaveAs
       end
       object N4: TMenuItem
         Caption = '-'
       end
       object Exit1: TMenuItem
-        Caption = '&Exit'
+        Action = acExit
       end
     end
     object Search1: TMenuItem
       Caption = '&Search'
       object Find1: TMenuItem
-        Caption = '&Find...'
-      end
-      object Replace1: TMenuItem
-        Caption = '&Replace...'
+        Action = acFind
       end
       object Searchagain1: TMenuItem
-        Caption = '&Search again'
+        Action = acFindNext
+      end
+      object Replace1: TMenuItem
+        Action = acReplace
       end
       object N6: TMenuItem
         Caption = '-'
       end
       object Gotolinenumber1: TMenuItem
-        Caption = '&Go to...'
+        Action = acGoToLine
       end
     end
     object Run1: TMenuItem
       Caption = '&Run'
-      object Syntaxcheck1: TMenuItem
-        Caption = 'Syntax &check'
-      end
       object Compile1: TMenuItem
-        Caption = 'Compile'
-        ShortCut = 16504
-        OnClick = Compile1Click
+        Action = acCompile
       end
       object Decompile1: TMenuItem
-        Caption = '&Decompile...'
+        Action = acDecompile
       end
       object N5: TMenuItem
         Caption = '-'
       end
       object StepOver1: TMenuItem
-        Caption = '&Step Over'
-        ShortCut = 119
+        Action = acStepOver
       end
       object StepInto1: TMenuItem
-        Caption = 'Step &Into'
-        ShortCut = 118
+        Action = acStepInto
       end
       object N1: TMenuItem
         Caption = '-'
       end
       object Pause1: TMenuItem
-        Caption = '&Pause'
+        Action = acPause
       end
       object Reset1: TMenuItem
-        Caption = 'R&eset'
-        ShortCut = 16497
+        Action = acReset
       end
       object N2: TMenuItem
         Caption = '-'
       end
       object Run: TMenuItem
-        Caption = '&Run'
-        ShortCut = 120
-        OnClick = RunClick
+        Action = acRun
       end
     end
     object este1: TMenuItem
       Caption = 'Teste'
+      Visible = False
       object SaveCompile1: TMenuItem
         Caption = 'Save Compiled'
       end
@@ -215,10 +199,94 @@ object Frm_Editor: TFrm_Editor
   end
   object ActionList1: TActionList
     Left = 208
-    Top = 376
+    Top = 336
+    object acNew: TAction
+      Category = 'File'
+      Caption = '&New'
+      ShortCut = 16462
+      OnExecute = acNewExecute
+    end
+    object acOpen: TAction
+      Category = 'File'
+      Caption = '&Open...'
+      ShortCut = 16463
+      OnExecute = acOpenExecute
+    end
     object acSave: TAction
-      Caption = 'Save'
+      Category = 'File'
+      Caption = '&Save'
+      ShortCut = 16467
       OnExecute = acSaveExecute
+    end
+    object acSaveAs: TAction
+      Category = 'File'
+      Caption = 'Save &as...'
+      OnExecute = acSaveAsExecute
+    end
+    object acExit: TAction
+      Category = 'File'
+      Caption = '&Exit'
+      OnExecute = acExitExecute
+    end
+    object acFind: TAction
+      Category = 'Search'
+      Caption = '&Find'
+      Visible = False
+    end
+    object acReplace: TAction
+      Category = 'Search'
+      Caption = '&Replace'
+      Visible = False
+    end
+    object acFindNext: TAction
+      Category = 'Search'
+      Caption = 'Find &Next'
+      Visible = False
+    end
+    object acGoToLine: TAction
+      Category = 'Search'
+      Caption = '&Goto Line'
+      OnExecute = acGoToLineExecute
+    end
+    object acCompile: TAction
+      Category = 'Run'
+      Caption = '&Compile'
+      ShortCut = 16504
+      OnExecute = acCompileExecute
+    end
+    object acDecompile: TAction
+      Category = 'Run'
+      Caption = '&Decompile'
+      Visible = False
+    end
+    object acStepOver: TAction
+      Category = 'Run'
+      Caption = '&Step Over'
+      ShortCut = 119
+      Visible = False
+    end
+    object acStepInto: TAction
+      Category = 'Run'
+      Caption = 'Step &Into'
+      ShortCut = 118
+      Visible = False
+    end
+    object acPause: TAction
+      Category = 'Run'
+      Caption = '&Pause'
+      Visible = False
+    end
+    object acReset: TAction
+      Category = 'Run'
+      Caption = 'R&eset'
+      ShortCut = 16497
+      OnExecute = acResetExecute
+    end
+    object acRun: TAction
+      Category = 'Run'
+      Caption = '&Run'
+      ShortCut = 120
+      OnExecute = acRunExecute
     end
   end
   object PSCustomPlugin: TPSCustomPlugin

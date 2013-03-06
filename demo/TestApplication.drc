@@ -9,198 +9,199 @@
 */
 
 #define PSResources_sFileNotSaved 64960
-#define Data_DBConsts_SParameterNotFound 64976
-#define Data_DBConsts_SInvalidVersion 64977
-#define Data_DBConsts_SBadFieldType 64978
-#define Data_DBConsts_SProviderSQLNotSupported 64979
-#define Data_DBConsts_SProviderExecuteNotSupported 64980
-#define Data_DBConsts_SDataSetUnidirectional 64981
-#define Data_DBConsts_SUnassignedVar 64982
-#define Data_DBConsts_SRecordNotFound 64983
-#define Data_DBConsts_SBcdOverflow 64984
-#define Data_DBConsts_SInvalidBcdValue 64985
-#define Data_DBConsts_SCouldNotParseTimeStamp 64986
-#define Data_DBConsts_SInvalidSqlTimeStamp 64987
+#define PSResources_sEmptyProgram 64961
+#define SynEditStrConst_SYNS_FriendlyAttrReservedWord 64976
+#define SynEditStrConst_SYNS_FriendlyAttrSpace 64977
+#define SynEditStrConst_SYNS_FriendlyAttrString 64978
+#define SynEditStrConst_SYNS_FriendlyAttrSymbol 64979
+#define SynEditStrConst_SYNS_ScrollInfoFmt 64980
+#define SynEditStrConst_SYNS_ScrollInfoFmtTop 64981
+#define SynEditStrConst_SYNS_EDuplicateShortcut 64982
+#define SynEditStrConst_SYNS_FilterPascal 64983
+#define SynEditStrConst_SYNS_FriendlyLangPascal 64984
+#define SynEditStrConst_SYNS_FriendlyLangUnknown 64985
+#define SynEditTextBuffer_SListIndexOutOfBounds 64986
+#define SynEditTextBuffer_SInvalidCapacity 64987
 #define PSResources_sBeginCompile 64988
 #define PSResources_sSuccessfullyExecuted 64989
 #define PSResources_sRuntimeError 64990
 #define PSResources_sEditorTitle 64991
-#define Data_DBConsts_SInvalidCalcType 64992
-#define Data_DBConsts_SDuplicateIndexName 64993
-#define Data_DBConsts_SNoIndexForFields 64994
-#define Data_DBConsts_SIndexNotFound 64995
-#define Data_DBConsts_SDBDuplicateName 64996
-#define Data_DBConsts_SCircularDataLink 64997
-#define Data_DBConsts_SLookupInfoError 64998
-#define Data_DBConsts_SDataSourceChange 64999
-#define Data_DBConsts_SDataSetOpen 65000
-#define Data_DBConsts_SNotEditing 65001
-#define Data_DBConsts_SDataSetClosed 65002
-#define Data_DBConsts_SDataSetEmpty 65003
-#define Data_DBConsts_SDataSetReadOnly 65004
-#define Data_DBConsts_SNestedDataSetClass 65005
-#define Data_DBConsts_STextFalse 65006
-#define Data_DBConsts_STextTrue 65007
-#define Data_DBConsts_SFieldNameMissing 65008
-#define Data_DBConsts_SDuplicateFieldName 65009
-#define Data_DBConsts_SFieldNotFound 65010
-#define Data_DBConsts_SFieldAccessError 65011
-#define Data_DBConsts_SFieldValueError 65012
-#define Data_DBConsts_SFieldRangeError 65013
-#define Data_DBConsts_SBcdFieldRangeError 65014
-#define Data_DBConsts_SInvalidIntegerValue 65015
-#define Data_DBConsts_SInvalidBoolValue 65016
-#define Data_DBConsts_SInvalidFloatValue 65017
-#define Data_DBConsts_SFieldTypeMismatch 65018
-#define Data_DBConsts_SFieldSizeMismatch 65019
-#define Data_DBConsts_SInvalidVarByteArray 65020
-#define Data_DBConsts_SFieldOutOfRange 65021
-#define Data_DBConsts_SFieldRequired 65022
-#define Data_DBConsts_SDataSetMissing 65023
-#define uPSPreProcessor_RPS_NoIfdefForEndif 65024
-#define uPSPreProcessor_RPS_NoIfdefForElse 65025
-#define uPSPreProcessor_RPS_ElseTwice 65026
-#define uPSPreProcessor_RPS_UnknownCompilerDirective 65027
-#define uPSPreProcessor_RPs_DefineNotClosed 65028
-#define uPSComponent_RPS_UnableToReadVariant 65029
-#define uPSComponent_RPS_UnableToWriteVariant 65030
-#define uPSComponent_RPS_ScripEngineAlreadyRunning 65031
-#define uPSComponent_RPS_ScriptNotCompiled 65032
-#define uPSComponent_RPS_NotRunning 65033
-#define uPSComponent_RPS_UnableToFindVariable 65034
-#define uPSComponent_RPS_UnknownIdentifier 65035
-#define uPSComponent_RPS_NoScript 65036
-#define Data_DBConsts_SInvalidFieldSize 65037
-#define Data_DBConsts_SInvalidFieldKind 65038
-#define Data_DBConsts_SUnknownFieldType 65039
-#define uPSCompiler_RPS_VariableNotUsed 65040
-#define uPSCompiler_RPS_FunctionNotUsed 65041
-#define uPSCompiler_RPS_UnknownHint 65042
-#define uPSCompiler_RPS_Warning 65043
-#define uPSCompiler_RPS_CalculationAlwaysEvaluatesTo 65044
-#define uPSCompiler_RPS_IsNotNeeded 65045
-#define uPSCompiler_RPS_AbstractClass 65046
-#define uPSCompiler_RPS_UnknownWarning 65047
-#define uPSCompiler_RPS_NotArrayProperty 65048
-#define uPSCompiler_RPS_NotProperty 65049
-#define uPSCompiler_RPS_UnknownProperty 65050
-#define uPSC_dll_RPS_Invalid_External 65051
-#define uPSC_dll_RPS_InvalidCallingConvention 65052
-#define uPSPreProcessor_RPS_TooManyNestedInclude 65053
-#define uPSPreProcessor_RPS_IncludeNotFound 65054
-#define uPSPreProcessor_RPS_DefineTooManyParameters 65055
-#define uPSCompiler_RPS_StringExpected 65056
-#define uPSCompiler_RPS_EndExpected 65057
-#define uPSCompiler_RPS_UnSetLabel 65058
-#define uPSCompiler_RPS_NotInLoop 65059
-#define uPSCompiler_RPS_InvalidJump 65060
-#define uPSCompiler_RPS_OpenBlockExpected 65061
-#define uPSCompiler_RPS_WriteOnlyProperty 65062
-#define uPSCompiler_RPS_ReadOnlyProperty 65063
-#define uPSCompiler_RPS_ClassTypeExpected 65064
-#define uPSCompiler_RPS_DivideByZero 65065
-#define uPSCompiler_RPS_MathError 65066
-#define uPSCompiler_RPS_UnsatisfiedForward 65067
-#define uPSCompiler_RPS_ForwardParameterMismatch 65068
-#define uPSCompiler_RPS_InvalidNumberOfParameter 65069
-#define uPSCompiler_RPS_UnknownError 65070
-#define uPSCompiler_RPS_Hint 65071
-#define uPSCompiler_RPS_ColonExpected 65072
-#define uPSCompiler_RPS_UnknownType 65073
-#define uPSCompiler_RPS_CloseRoundExpected 65074
-#define uPSCompiler_RPS_TypeMismatch 65075
-#define uPSCompiler_RPS_InternalError 65076
-#define uPSCompiler_RPS_AssignmentExpected 65077
-#define uPSCompiler_RPS_ThenExpected 65078
-#define uPSCompiler_RPS_DoExpected 65079
-#define uPSCompiler_RPS_NoResult 65080
-#define uPSCompiler_RPS_OpenRoundExpected 65081
-#define uPSCompiler_RPS_CommaExpected 65082
-#define uPSCompiler_RPS_ToExpected 65083
-#define uPSCompiler_RPS_IsExpected 65084
-#define uPSCompiler_RPS_OfExpected 65085
-#define uPSCompiler_RPS_CloseBlockExpected 65086
-#define uPSCompiler_RPS_VariableExpected 65087
-#define uPSCompiler_RPS_UnableToRegisterType 65088
-#define uPSCompiler_RPS_UnknownInterface 65089
-#define uPSCompiler_RPS_ConstantValueMismatch 65090
-#define uPSCompiler_RPS_ConstantValueNotAssigned 65091
-#define uPSCompiler_RPS_Error 65092
-#define uPSCompiler_RPS_UnknownIdentifier 65093
-#define uPSCompiler_RPS_IdentifierExpected 65094
-#define uPSCompiler_RPS_CommentError 65095
-#define uPSCompiler_RPS_StringError 65096
-#define uPSCompiler_RPS_CharError 65097
-#define uPSCompiler_RPS_SyntaxError 65098
-#define uPSCompiler_RPS_EOF 65099
-#define uPSCompiler_RPS_SemiColonExpected 65100
-#define uPSCompiler_RPS_BeginExpected 65101
-#define uPSCompiler_RPS_PeriodExpected 65102
-#define uPSCompiler_RPS_DuplicateIdent 65103
-#define uPSRuntime_RPS_NotEnoughParameters 65104
-#define uPSRuntime_RPS_InvalidParameter 65105
-#define uPSRuntime_RPS_TooManyParameters 65106
-#define uPSRuntime_RPS_OutOfStringRange 65107
-#define uPSRuntime_RPS_CannotCastInterface 65108
-#define uPSRuntime_RPS_CannotCastObject 65109
-#define uPSRuntime_RPS_CapacityLength 65110
-#define uPSRuntime_RPS_CanOnlySendLastItem 65111
-#define uPSRuntime_RPS_NILInterfaceException 65112
-#define uPSRuntime_RPS_UnknownMethod 65113
-#define uPSDebugger_RPS_ExpectedReturnAddressStackBase 65114
-#define uPSCompiler_RPS_OnUseEventOnly 65115
-#define uPSCompiler_RPS_UnableToRegisterFunction 65116
-#define uPSCompiler_RPS_UnableToRegisterConst 65117
-#define uPSCompiler_RPS_InvalidTypeForVar 65118
-#define uPSCompiler_RPS_InvalidType 65119
-#define uPSRuntime_RPS_OutOfRange 65120
-#define uPSRuntime_RPS_OutOfStackRange 65121
-#define uPSRuntime_RPS_TypeMismatch 65122
-#define uPSRuntime_RPS_UnexpectedEof 65123
-#define uPSRuntime_RPS_VersionError 65124
-#define uPSRuntime_RPS_DivideByZero 65125
-#define uPSRuntime_RPS_MathError 65126
-#define uPSRuntime_RPS_CouldNotCallProc 65127
-#define uPSRuntime_RPS_OutofRecordRange 65128
-#define uPSRuntime_RPS_NullPointerException 65129
-#define uPSRuntime_RPS_NullVariantError 65130
-#define uPSRuntime_RPS_OutOfMemory 65131
-#define uPSRuntime_RPS_InterfaceNotSupported 65132
-#define uPSRuntime_RPS_UnknownError 65133
-#define uPSRuntime_RPS_InvalidArray 65134
-#define uPSRuntime_RPS_UnknownProcedure 65135
-#define SynEditTextBuffer_SListIndexOutOfBounds 65136
-#define SynEditTextBuffer_SInvalidCapacity 65137
-#define uPSUtils_RPS_InvalidFloat 65138
-#define uPSRuntime_RPS_UnknownIdentifier 65139
-#define uPSRuntime_RPS_Exception 65140
-#define uPSRuntime_RPS_Invalid 65141
-#define uPSRuntime_RPS_NoError 65142
-#define uPSRuntime_RPS_CannotImport 65143
-#define uPSRuntime_RPS_InvalidType 65144
-#define uPSRuntime_RPS_InternalError 65145
-#define uPSRuntime_RPS_InvalidHeader 65146
-#define uPSRuntime_RPS_InvalidOpcode 65147
-#define uPSRuntime_RPS_InvalidOpcodeParameter 65148
-#define uPSRuntime_RPS_NoMainProc 65149
-#define uPSRuntime_RPS_OutOfGlobalVarsRange 65150
-#define uPSRuntime_RPS_OutOfProcRange 65151
-#define SynEditStrConst_SYNS_FriendlyAttrComment 65152
-#define SynEditStrConst_SYNS_FriendlyAttrFloat 65153
-#define SynEditStrConst_SYNS_FriendlyAttrHexadecimal 65154
-#define SynEditStrConst_SYNS_FriendlyAttrIdentifier 65155
-#define SynEditStrConst_SYNS_FriendlyAttrNumber 65156
-#define SynEditStrConst_SYNS_FriendlyAttrPreprocessor 65157
-#define SynEditStrConst_SYNS_FriendlyAttrReservedWord 65158
-#define SynEditStrConst_SYNS_FriendlyAttrSpace 65159
-#define SynEditStrConst_SYNS_FriendlyAttrString 65160
-#define SynEditStrConst_SYNS_FriendlyAttrSymbol 65161
-#define SynEditStrConst_SYNS_ScrollInfoFmt 65162
-#define SynEditStrConst_SYNS_ScrollInfoFmtTop 65163
-#define SynEditStrConst_SYNS_EDuplicateShortcut 65164
-#define SynEditStrConst_SYNS_FilterPascal 65165
-#define SynEditStrConst_SYNS_FriendlyLangPascal 65166
-#define SynEditStrConst_SYNS_FriendlyLangUnknown 65167
+#define Data_DBConsts_SProviderExecuteNotSupported 64992
+#define Data_DBConsts_SDataSetUnidirectional 64993
+#define Data_DBConsts_SUnassignedVar 64994
+#define Data_DBConsts_SRecordNotFound 64995
+#define Data_DBConsts_SBcdOverflow 64996
+#define Data_DBConsts_SInvalidBcdValue 64997
+#define Data_DBConsts_SCouldNotParseTimeStamp 64998
+#define Data_DBConsts_SInvalidSqlTimeStamp 64999
+#define SynEditStrConst_SYNS_FriendlyAttrAssembler 65000
+#define SynEditStrConst_SYNS_FriendlyAttrCharacter 65001
+#define SynEditStrConst_SYNS_FriendlyAttrComment 65002
+#define SynEditStrConst_SYNS_FriendlyAttrFloat 65003
+#define SynEditStrConst_SYNS_FriendlyAttrHexadecimal 65004
+#define SynEditStrConst_SYNS_FriendlyAttrIdentifier 65005
+#define SynEditStrConst_SYNS_FriendlyAttrNumber 65006
+#define SynEditStrConst_SYNS_FriendlyAttrPreprocessor 65007
+#define Data_DBConsts_SDBDuplicateName 65008
+#define Data_DBConsts_SCircularDataLink 65009
+#define Data_DBConsts_SLookupInfoError 65010
+#define Data_DBConsts_SDataSourceChange 65011
+#define Data_DBConsts_SDataSetOpen 65012
+#define Data_DBConsts_SNotEditing 65013
+#define Data_DBConsts_SDataSetClosed 65014
+#define Data_DBConsts_SDataSetEmpty 65015
+#define Data_DBConsts_SDataSetReadOnly 65016
+#define Data_DBConsts_SNestedDataSetClass 65017
+#define Data_DBConsts_STextFalse 65018
+#define Data_DBConsts_STextTrue 65019
+#define Data_DBConsts_SParameterNotFound 65020
+#define Data_DBConsts_SInvalidVersion 65021
+#define Data_DBConsts_SBadFieldType 65022
+#define Data_DBConsts_SProviderSQLNotSupported 65023
+#define Data_DBConsts_SFieldValueError 65024
+#define Data_DBConsts_SFieldRangeError 65025
+#define Data_DBConsts_SBcdFieldRangeError 65026
+#define Data_DBConsts_SInvalidIntegerValue 65027
+#define Data_DBConsts_SInvalidBoolValue 65028
+#define Data_DBConsts_SInvalidFloatValue 65029
+#define Data_DBConsts_SFieldTypeMismatch 65030
+#define Data_DBConsts_SFieldSizeMismatch 65031
+#define Data_DBConsts_SInvalidVarByteArray 65032
+#define Data_DBConsts_SFieldOutOfRange 65033
+#define Data_DBConsts_SFieldRequired 65034
+#define Data_DBConsts_SDataSetMissing 65035
+#define Data_DBConsts_SInvalidCalcType 65036
+#define Data_DBConsts_SDuplicateIndexName 65037
+#define Data_DBConsts_SNoIndexForFields 65038
+#define Data_DBConsts_SIndexNotFound 65039
+#define uPSPreProcessor_RPs_DefineNotClosed 65040
+#define uPSComponent_RPS_UnableToReadVariant 65041
+#define uPSComponent_RPS_UnableToWriteVariant 65042
+#define uPSComponent_RPS_ScripEngineAlreadyRunning 65043
+#define uPSComponent_RPS_ScriptNotCompiled 65044
+#define uPSComponent_RPS_NotRunning 65045
+#define uPSComponent_RPS_UnableToFindVariable 65046
+#define uPSComponent_RPS_UnknownIdentifier 65047
+#define uPSComponent_RPS_NoScript 65048
+#define Data_DBConsts_SInvalidFieldSize 65049
+#define Data_DBConsts_SInvalidFieldKind 65050
+#define Data_DBConsts_SUnknownFieldType 65051
+#define Data_DBConsts_SFieldNameMissing 65052
+#define Data_DBConsts_SDuplicateFieldName 65053
+#define Data_DBConsts_SFieldNotFound 65054
+#define Data_DBConsts_SFieldAccessError 65055
+#define uPSCompiler_RPS_CalculationAlwaysEvaluatesTo 65056
+#define uPSCompiler_RPS_IsNotNeeded 65057
+#define uPSCompiler_RPS_AbstractClass 65058
+#define uPSCompiler_RPS_UnknownWarning 65059
+#define uPSCompiler_RPS_NotArrayProperty 65060
+#define uPSCompiler_RPS_NotProperty 65061
+#define uPSCompiler_RPS_UnknownProperty 65062
+#define uPSC_dll_RPS_Invalid_External 65063
+#define uPSC_dll_RPS_InvalidCallingConvention 65064
+#define uPSPreProcessor_RPS_TooManyNestedInclude 65065
+#define uPSPreProcessor_RPS_IncludeNotFound 65066
+#define uPSPreProcessor_RPS_DefineTooManyParameters 65067
+#define uPSPreProcessor_RPS_NoIfdefForEndif 65068
+#define uPSPreProcessor_RPS_NoIfdefForElse 65069
+#define uPSPreProcessor_RPS_ElseTwice 65070
+#define uPSPreProcessor_RPS_UnknownCompilerDirective 65071
+#define uPSCompiler_RPS_InvalidJump 65072
+#define uPSCompiler_RPS_OpenBlockExpected 65073
+#define uPSCompiler_RPS_WriteOnlyProperty 65074
+#define uPSCompiler_RPS_ReadOnlyProperty 65075
+#define uPSCompiler_RPS_ClassTypeExpected 65076
+#define uPSCompiler_RPS_DivideByZero 65077
+#define uPSCompiler_RPS_MathError 65078
+#define uPSCompiler_RPS_UnsatisfiedForward 65079
+#define uPSCompiler_RPS_ForwardParameterMismatch 65080
+#define uPSCompiler_RPS_InvalidNumberOfParameter 65081
+#define uPSCompiler_RPS_UnknownError 65082
+#define uPSCompiler_RPS_Hint 65083
+#define uPSCompiler_RPS_VariableNotUsed 65084
+#define uPSCompiler_RPS_FunctionNotUsed 65085
+#define uPSCompiler_RPS_UnknownHint 65086
+#define uPSCompiler_RPS_Warning 65087
+#define uPSCompiler_RPS_InternalError 65088
+#define uPSCompiler_RPS_AssignmentExpected 65089
+#define uPSCompiler_RPS_ThenExpected 65090
+#define uPSCompiler_RPS_DoExpected 65091
+#define uPSCompiler_RPS_NoResult 65092
+#define uPSCompiler_RPS_OpenRoundExpected 65093
+#define uPSCompiler_RPS_CommaExpected 65094
+#define uPSCompiler_RPS_ToExpected 65095
+#define uPSCompiler_RPS_IsExpected 65096
+#define uPSCompiler_RPS_OfExpected 65097
+#define uPSCompiler_RPS_CloseBlockExpected 65098
+#define uPSCompiler_RPS_VariableExpected 65099
+#define uPSCompiler_RPS_StringExpected 65100
+#define uPSCompiler_RPS_EndExpected 65101
+#define uPSCompiler_RPS_UnSetLabel 65102
+#define uPSCompiler_RPS_NotInLoop 65103
+#define uPSCompiler_RPS_Error 65104
+#define uPSCompiler_RPS_UnknownIdentifier 65105
+#define uPSCompiler_RPS_IdentifierExpected 65106
+#define uPSCompiler_RPS_CommentError 65107
+#define uPSCompiler_RPS_StringError 65108
+#define uPSCompiler_RPS_CharError 65109
+#define uPSCompiler_RPS_SyntaxError 65110
+#define uPSCompiler_RPS_EOF 65111
+#define uPSCompiler_RPS_SemiColonExpected 65112
+#define uPSCompiler_RPS_BeginExpected 65113
+#define uPSCompiler_RPS_PeriodExpected 65114
+#define uPSCompiler_RPS_DuplicateIdent 65115
+#define uPSCompiler_RPS_ColonExpected 65116
+#define uPSCompiler_RPS_UnknownType 65117
+#define uPSCompiler_RPS_CloseRoundExpected 65118
+#define uPSCompiler_RPS_TypeMismatch 65119
+#define uPSRuntime_RPS_CannotCastInterface 65120
+#define uPSRuntime_RPS_CannotCastObject 65121
+#define uPSRuntime_RPS_CapacityLength 65122
+#define uPSRuntime_RPS_CanOnlySendLastItem 65123
+#define uPSRuntime_RPS_NILInterfaceException 65124
+#define uPSRuntime_RPS_UnknownMethod 65125
+#define uPSDebugger_RPS_ExpectedReturnAddressStackBase 65126
+#define uPSCompiler_RPS_OnUseEventOnly 65127
+#define uPSCompiler_RPS_UnableToRegisterFunction 65128
+#define uPSCompiler_RPS_UnableToRegisterConst 65129
+#define uPSCompiler_RPS_InvalidTypeForVar 65130
+#define uPSCompiler_RPS_InvalidType 65131
+#define uPSCompiler_RPS_UnableToRegisterType 65132
+#define uPSCompiler_RPS_UnknownInterface 65133
+#define uPSCompiler_RPS_ConstantValueMismatch 65134
+#define uPSCompiler_RPS_ConstantValueNotAssigned 65135
+#define uPSRuntime_RPS_VersionError 65136
+#define uPSRuntime_RPS_DivideByZero 65137
+#define uPSRuntime_RPS_MathError 65138
+#define uPSRuntime_RPS_CouldNotCallProc 65139
+#define uPSRuntime_RPS_OutofRecordRange 65140
+#define uPSRuntime_RPS_NullPointerException 65141
+#define uPSRuntime_RPS_NullVariantError 65142
+#define uPSRuntime_RPS_OutOfMemory 65143
+#define uPSRuntime_RPS_InterfaceNotSupported 65144
+#define uPSRuntime_RPS_UnknownError 65145
+#define uPSRuntime_RPS_InvalidArray 65146
+#define uPSRuntime_RPS_UnknownProcedure 65147
+#define uPSRuntime_RPS_NotEnoughParameters 65148
+#define uPSRuntime_RPS_InvalidParameter 65149
+#define uPSRuntime_RPS_TooManyParameters 65150
+#define uPSRuntime_RPS_OutOfStringRange 65151
+#define uPSRuntime_RPS_Exception 65152
+#define uPSRuntime_RPS_Invalid 65153
+#define uPSRuntime_RPS_NoError 65154
+#define uPSRuntime_RPS_CannotImport 65155
+#define uPSRuntime_RPS_InvalidType 65156
+#define uPSRuntime_RPS_InternalError 65157
+#define uPSRuntime_RPS_InvalidHeader 65158
+#define uPSRuntime_RPS_InvalidOpcode 65159
+#define uPSRuntime_RPS_InvalidOpcodeParameter 65160
+#define uPSRuntime_RPS_NoMainProc 65161
+#define uPSRuntime_RPS_OutOfGlobalVarsRange 65162
+#define uPSRuntime_RPS_OutOfProcRange 65163
+#define uPSRuntime_RPS_OutOfRange 65164
+#define uPSRuntime_RPS_OutOfStackRange 65165
+#define uPSRuntime_RPS_TypeMismatch 65166
+#define uPSRuntime_RPS_UnexpectedEof 65167
 #define Vcl_Consts_SStyleLoadErrors 65168
 #define Vcl_Consts_SStyleRegisterError 65169
 #define Vcl_Consts_SStyleClassRegisterError 65170
@@ -215,8 +216,8 @@
 #define System_Win_ComConst_SNoMethod 65179
 #define System_Win_ComConst_SVarNotObject 65180
 #define System_Win_ComConst_STooManyParams 65181
-#define SynEditStrConst_SYNS_FriendlyAttrAssembler 65182
-#define SynEditStrConst_SYNS_FriendlyAttrCharacter 65183
+#define uPSUtils_RPS_InvalidFloat 65182
+#define uPSRuntime_RPS_UnknownIdentifier 65183
 #define Vcl_Consts_SDockZoneVersionConflict 65184
 #define Vcl_Consts_STextNotFound 65185
 #define Vcl_Consts_SPromptArrayTooShort 65186
@@ -572,10 +573,23 @@
 STRINGTABLE
 BEGIN
 	PSResources_sFileNotSaved,	L"File has not been saved, save now?"
-	Data_DBConsts_SParameterNotFound,	L"Parameter '%s' not found"
-	Data_DBConsts_SInvalidVersion,	L"Unable to load bind parameters"
-	Data_DBConsts_SBadFieldType,	L"Field '%s' is of an unsupported type"
-	Data_DBConsts_SProviderSQLNotSupported,	L"SQL not supported"
+	PSResources_sEmptyProgram,	L"Program myprogram;\r\nbegin\r\nend."
+	SynEditStrConst_SYNS_FriendlyAttrReservedWord,	L"Reserved Word"
+	SynEditStrConst_SYNS_FriendlyAttrSpace,	L"Space"
+	SynEditStrConst_SYNS_FriendlyAttrString,	L"String"
+	SynEditStrConst_SYNS_FriendlyAttrSymbol,	L"Symbol"
+	SynEditStrConst_SYNS_ScrollInfoFmt,	L"%d - %d"
+	SynEditStrConst_SYNS_ScrollInfoFmtTop,	L"Top Line: %d"
+	SynEditStrConst_SYNS_EDuplicateShortcut,	L"Shortcut already exists"
+	SynEditStrConst_SYNS_FilterPascal,	L"Pascal Files (*.pas;*.pp;*.dpr;*.dpk;*.inc)|*.pas;*.pp;*.dpr;*.dpk;*.inc"
+	SynEditStrConst_SYNS_FriendlyLangPascal,	L"Object Pascal"
+	SynEditStrConst_SYNS_FriendlyLangUnknown,	L"<Unknown>"
+	SynEditTextBuffer_SListIndexOutOfBounds,	L"Invalid stringlist index %d"
+	SynEditTextBuffer_SInvalidCapacity,	L"Stringlist capacity cannot be smaller than count"
+	PSResources_sBeginCompile,	L"Compiling"
+	PSResources_sSuccessfullyExecuted,	L"Succesfully executed"
+	PSResources_sRuntimeError,	L"[Runtime error] %s(%d:%d), bytecode(%d:%d): %s"
+	PSResources_sEditorTitle,	L"Editor"
 	Data_DBConsts_SProviderExecuteNotSupported,	L"Execute not supported"
 	Data_DBConsts_SDataSetUnidirectional,	L"Operation not allowed on a unidirectional dataset"
 	Data_DBConsts_SUnassignedVar,	L"Unassigned variant value"
@@ -584,14 +598,14 @@ BEGIN
 	Data_DBConsts_SInvalidBcdValue,	L"%s is not a valid BCD value"
 	Data_DBConsts_SCouldNotParseTimeStamp,	L"Could not parse SQL TimeStamp string"
 	Data_DBConsts_SInvalidSqlTimeStamp,	L"Invalid SQL date/time values"
-	PSResources_sBeginCompile,	L"Compiling"
-	PSResources_sSuccessfullyExecuted,	L"Succesfully executed"
-	PSResources_sRuntimeError,	L"[Runtime error] %s(%d:%d), bytecode(%d:%d): %s"
-	PSResources_sEditorTitle,	L"Editor"
-	Data_DBConsts_SInvalidCalcType,	L"Field '%s' cannot be a calculated or lookup field"
-	Data_DBConsts_SDuplicateIndexName,	L"Duplicate index name '%s'"
-	Data_DBConsts_SNoIndexForFields,	L"No index for fields '%s'"
-	Data_DBConsts_SIndexNotFound,	L"Index '%s' not found"
+	SynEditStrConst_SYNS_FriendlyAttrAssembler,	L"Assembler"
+	SynEditStrConst_SYNS_FriendlyAttrCharacter,	L"Character"
+	SynEditStrConst_SYNS_FriendlyAttrComment,	L"Comment"
+	SynEditStrConst_SYNS_FriendlyAttrFloat,	L"Float"
+	SynEditStrConst_SYNS_FriendlyAttrHexadecimal,	L"Hexadecimal"
+	SynEditStrConst_SYNS_FriendlyAttrIdentifier,	L"Identifier"
+	SynEditStrConst_SYNS_FriendlyAttrNumber,	L"Number"
+	SynEditStrConst_SYNS_FriendlyAttrPreprocessor,	L"Preprocessor"
 	Data_DBConsts_SDBDuplicateName,	L"Duplicate name '%s' in %s"
 	Data_DBConsts_SCircularDataLink,	L"Circular datalinks are not allowed"
 	Data_DBConsts_SLookupInfoError,	L"Lookup information for field '%s' is incomplete"
@@ -604,10 +618,10 @@ BEGIN
 	Data_DBConsts_SNestedDataSetClass,	L"Nested dataset must inherit from %s"
 	Data_DBConsts_STextFalse,	L"False"
 	Data_DBConsts_STextTrue,	L"True"
-	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
-	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
-	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
-	Data_DBConsts_SFieldAccessError,	L"Cannot access field '%s' as type %s"
+	Data_DBConsts_SParameterNotFound,	L"Parameter '%s' not found"
+	Data_DBConsts_SInvalidVersion,	L"Unable to load bind parameters"
+	Data_DBConsts_SBadFieldType,	L"Field '%s' is of an unsupported type"
+	Data_DBConsts_SProviderSQLNotSupported,	L"SQL not supported"
 	Data_DBConsts_SFieldValueError,	L"Invalid value for field '%s'"
 	Data_DBConsts_SFieldRangeError,	L"%g is not a valid value for field '%s'. The allowed range is %g to %g"
 	Data_DBConsts_SBcdFieldRangeError,	L"%s is not a valid value for field '%s'. The allowed range is %s to %s"
@@ -620,10 +634,10 @@ BEGIN
 	Data_DBConsts_SFieldOutOfRange,	L"Value of field '%s' is out of range"
 	Data_DBConsts_SFieldRequired,	L"Field '%s' must have a value"
 	Data_DBConsts_SDataSetMissing,	L"Field '%s' has no dataset"
-	uPSPreProcessor_RPS_NoIfdefForEndif,	L"No IFDEF for ENDIF at %d:%d"
-	uPSPreProcessor_RPS_NoIfdefForElse,	L"No IFDEF for ELSE at %d:%d"
-	uPSPreProcessor_RPS_ElseTwice,	L"Can't use ELSE twice at %d:%d"
-	uPSPreProcessor_RPS_UnknownCompilerDirective,	L"Unknown compiler directives at %d:%d"
+	Data_DBConsts_SInvalidCalcType,	L"Field '%s' cannot be a calculated or lookup field"
+	Data_DBConsts_SDuplicateIndexName,	L"Duplicate index name '%s'"
+	Data_DBConsts_SNoIndexForFields,	L"No index for fields '%s'"
+	Data_DBConsts_SIndexNotFound,	L"Index '%s' not found"
 	uPSPreProcessor_RPs_DefineNotClosed,	L"Define not closed"
 	uPSComponent_RPS_UnableToReadVariant,	L"Unable to read variant"
 	uPSComponent_RPS_UnableToWriteVariant,	L"Unable to write variant"
@@ -636,10 +650,10 @@ BEGIN
 	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
 	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
 	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
-	uPSCompiler_RPS_VariableNotUsed,	L"Variable '%s' never used"
-	uPSCompiler_RPS_FunctionNotUsed,	L"Function '%s' never used"
-	uPSCompiler_RPS_UnknownHint,	L"Unknown hint"
-	uPSCompiler_RPS_Warning,	L"Warning"
+	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
+	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
+	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
+	Data_DBConsts_SFieldAccessError,	L"Cannot access field '%s' as type %s"
 	uPSCompiler_RPS_CalculationAlwaysEvaluatesTo,	L"Calculation always evaluates to %s"
 	uPSCompiler_RPS_IsNotNeeded,	L"%s is not needed"
 	uPSCompiler_RPS_AbstractClass,	L"Abstract Class Construction"
@@ -652,10 +666,10 @@ BEGIN
 	uPSPreProcessor_RPS_TooManyNestedInclude,	L"Too many nested include files while processing '%s' from '%s'"
 	uPSPreProcessor_RPS_IncludeNotFound,	L"Unable to find file '%s' used from '%s'"
 	uPSPreProcessor_RPS_DefineTooManyParameters,	L"Too many parameters at %d:%d"
-	uPSCompiler_RPS_StringExpected,	L"String Expected"
-	uPSCompiler_RPS_EndExpected,	L"'END' expected"
-	uPSCompiler_RPS_UnSetLabel,	L"Label '%s' not set"
-	uPSCompiler_RPS_NotInLoop,	L"Not in a loop"
+	uPSPreProcessor_RPS_NoIfdefForEndif,	L"No IFDEF for ENDIF at %d:%d"
+	uPSPreProcessor_RPS_NoIfdefForElse,	L"No IFDEF for ELSE at %d:%d"
+	uPSPreProcessor_RPS_ElseTwice,	L"Can't use ELSE twice at %d:%d"
+	uPSPreProcessor_RPS_UnknownCompilerDirective,	L"Unknown compiler directives at %d:%d"
 	uPSCompiler_RPS_InvalidJump,	L"Invalid jump"
 	uPSCompiler_RPS_OpenBlockExpected,	L"Opening square brackets ('[') expected"
 	uPSCompiler_RPS_WriteOnlyProperty,	L"Write-only property"
@@ -668,10 +682,10 @@ BEGIN
 	uPSCompiler_RPS_InvalidNumberOfParameter,	L"Invalid number of parameters"
 	uPSCompiler_RPS_UnknownError,	L"Unknown error"
 	uPSCompiler_RPS_Hint,	L"Hint"
-	uPSCompiler_RPS_ColonExpected,	L"colon (':') expected"
-	uPSCompiler_RPS_UnknownType,	L"Unknown type '%s'"
-	uPSCompiler_RPS_CloseRoundExpected,	L"Closing parenthesis expected"
-	uPSCompiler_RPS_TypeMismatch,	L"Type mismatch"
+	uPSCompiler_RPS_VariableNotUsed,	L"Variable '%s' never used"
+	uPSCompiler_RPS_FunctionNotUsed,	L"Function '%s' never used"
+	uPSCompiler_RPS_UnknownHint,	L"Unknown hint"
+	uPSCompiler_RPS_Warning,	L"Warning"
 	uPSCompiler_RPS_InternalError,	L"Internal error (%s)"
 	uPSCompiler_RPS_AssignmentExpected,	L"Assignment expected"
 	uPSCompiler_RPS_ThenExpected,	L"'THEN' expected"
@@ -684,10 +698,10 @@ BEGIN
 	uPSCompiler_RPS_OfExpected,	L"'OF' expected"
 	uPSCompiler_RPS_CloseBlockExpected,	L"Closing square bracket (']') expected"
 	uPSCompiler_RPS_VariableExpected,	L"Variable Expected"
-	uPSCompiler_RPS_UnableToRegisterType,	L"Unable to register type %s"
-	uPSCompiler_RPS_UnknownInterface,	L"Unknown interface: %s"
-	uPSCompiler_RPS_ConstantValueMismatch,	L"Constant Value Type Mismatch"
-	uPSCompiler_RPS_ConstantValueNotAssigned,	L"Constant Value is not assigned"
+	uPSCompiler_RPS_StringExpected,	L"String Expected"
+	uPSCompiler_RPS_EndExpected,	L"'END' expected"
+	uPSCompiler_RPS_UnSetLabel,	L"Label '%s' not set"
+	uPSCompiler_RPS_NotInLoop,	L"Not in a loop"
 	uPSCompiler_RPS_Error,	L"Error"
 	uPSCompiler_RPS_UnknownIdentifier,	L"Unknown identifier '%s'"
 	uPSCompiler_RPS_IdentifierExpected,	L"Identifier expected"
@@ -700,10 +714,10 @@ BEGIN
 	uPSCompiler_RPS_BeginExpected,	L"'BEGIN' expected"
 	uPSCompiler_RPS_PeriodExpected,	L"period ('.') expected"
 	uPSCompiler_RPS_DuplicateIdent,	L"Duplicate identifier '%s'"
-	uPSRuntime_RPS_NotEnoughParameters,	L"Not enough parameters"
-	uPSRuntime_RPS_InvalidParameter,	L"Invalid parameter"
-	uPSRuntime_RPS_TooManyParameters,	L"Too many parameters"
-	uPSRuntime_RPS_OutOfStringRange,	L"Out of string range"
+	uPSCompiler_RPS_ColonExpected,	L"colon (':') expected"
+	uPSCompiler_RPS_UnknownType,	L"Unknown type '%s'"
+	uPSCompiler_RPS_CloseRoundExpected,	L"Closing parenthesis expected"
+	uPSCompiler_RPS_TypeMismatch,	L"Type mismatch"
 	uPSRuntime_RPS_CannotCastInterface,	L"Cannot cast an interface"
 	uPSRuntime_RPS_CannotCastObject,	L"Cannot cast an object"
 	uPSRuntime_RPS_CapacityLength,	L"Capacity < Length"
@@ -716,10 +730,10 @@ BEGIN
 	uPSCompiler_RPS_UnableToRegisterConst,	L"Unable to register constant %s"
 	uPSCompiler_RPS_InvalidTypeForVar,	L"Invalid type for variable %s"
 	uPSCompiler_RPS_InvalidType,	L"Invalid Type"
-	uPSRuntime_RPS_OutOfRange,	L"Out Of Range"
-	uPSRuntime_RPS_OutOfStackRange,	L"Out Of Stack Range"
-	uPSRuntime_RPS_TypeMismatch,	L"Type Mismatch"
-	uPSRuntime_RPS_UnexpectedEof,	L"Unexpected End Of File"
+	uPSCompiler_RPS_UnableToRegisterType,	L"Unable to register type %s"
+	uPSCompiler_RPS_UnknownInterface,	L"Unknown interface: %s"
+	uPSCompiler_RPS_ConstantValueMismatch,	L"Constant Value Type Mismatch"
+	uPSCompiler_RPS_ConstantValueNotAssigned,	L"Constant Value is not assigned"
 	uPSRuntime_RPS_VersionError,	L"Version error"
 	uPSRuntime_RPS_DivideByZero,	L"divide by Zero"
 	uPSRuntime_RPS_MathError,	L"Math error"
@@ -732,10 +746,10 @@ BEGIN
 	uPSRuntime_RPS_UnknownError,	L"Unknown error"
 	uPSRuntime_RPS_InvalidArray,	L"Invalid array"
 	uPSRuntime_RPS_UnknownProcedure,	L"Unknown procedure"
-	SynEditTextBuffer_SListIndexOutOfBounds,	L"Invalid stringlist index %d"
-	SynEditTextBuffer_SInvalidCapacity,	L"Stringlist capacity cannot be smaller than count"
-	uPSUtils_RPS_InvalidFloat,	L"Invalid float"
-	uPSRuntime_RPS_UnknownIdentifier,	L"Unknown Identifier"
+	uPSRuntime_RPS_NotEnoughParameters,	L"Not enough parameters"
+	uPSRuntime_RPS_InvalidParameter,	L"Invalid parameter"
+	uPSRuntime_RPS_TooManyParameters,	L"Too many parameters"
+	uPSRuntime_RPS_OutOfStringRange,	L"Out of string range"
 	uPSRuntime_RPS_Exception,	L"Exception: %s"
 	uPSRuntime_RPS_Invalid,	L"[Invalid]"
 	uPSRuntime_RPS_NoError,	L"No Error"
@@ -748,22 +762,10 @@ BEGIN
 	uPSRuntime_RPS_NoMainProc,	L"no Main Proc"
 	uPSRuntime_RPS_OutOfGlobalVarsRange,	L"Out of Global Vars range"
 	uPSRuntime_RPS_OutOfProcRange,	L"Out of Proc Range"
-	SynEditStrConst_SYNS_FriendlyAttrComment,	L"Comment"
-	SynEditStrConst_SYNS_FriendlyAttrFloat,	L"Float"
-	SynEditStrConst_SYNS_FriendlyAttrHexadecimal,	L"Hexadecimal"
-	SynEditStrConst_SYNS_FriendlyAttrIdentifier,	L"Identifier"
-	SynEditStrConst_SYNS_FriendlyAttrNumber,	L"Number"
-	SynEditStrConst_SYNS_FriendlyAttrPreprocessor,	L"Preprocessor"
-	SynEditStrConst_SYNS_FriendlyAttrReservedWord,	L"Reserved Word"
-	SynEditStrConst_SYNS_FriendlyAttrSpace,	L"Space"
-	SynEditStrConst_SYNS_FriendlyAttrString,	L"String"
-	SynEditStrConst_SYNS_FriendlyAttrSymbol,	L"Symbol"
-	SynEditStrConst_SYNS_ScrollInfoFmt,	L"%d - %d"
-	SynEditStrConst_SYNS_ScrollInfoFmtTop,	L"Top Line: %d"
-	SynEditStrConst_SYNS_EDuplicateShortcut,	L"Shortcut already exists"
-	SynEditStrConst_SYNS_FilterPascal,	L"Pascal Files (*.pas;*.pp;*.dpr;*.dpk;*.inc)|*.pas;*.pp;*.dpr;*.dpk;*.inc"
-	SynEditStrConst_SYNS_FriendlyLangPascal,	L"Object Pascal"
-	SynEditStrConst_SYNS_FriendlyLangUnknown,	L"<Unknown>"
+	uPSRuntime_RPS_OutOfRange,	L"Out Of Range"
+	uPSRuntime_RPS_OutOfStackRange,	L"Out Of Stack Range"
+	uPSRuntime_RPS_TypeMismatch,	L"Type Mismatch"
+	uPSRuntime_RPS_UnexpectedEof,	L"Unexpected End Of File"
 	Vcl_Consts_SStyleLoadErrors,	L"Unable to load styles: %s"
 	Vcl_Consts_SStyleRegisterError,	L"Style '%s' already registered"
 	Vcl_Consts_SStyleClassRegisterError,	L"Style class '%s' already registered"
@@ -778,8 +780,8 @@ BEGIN
 	System_Win_ComConst_SNoMethod,	L"Method '%s' not supported by automation object"
 	System_Win_ComConst_SVarNotObject,	L"Variant does not reference an automation object"
 	System_Win_ComConst_STooManyParams,	L"Dispatch methods do not support more than 64 parameters"
-	SynEditStrConst_SYNS_FriendlyAttrAssembler,	L"Assembler"
-	SynEditStrConst_SYNS_FriendlyAttrCharacter,	L"Character"
+	uPSUtils_RPS_InvalidFloat,	L"Invalid float"
+	uPSRuntime_RPS_UnknownIdentifier,	L"Unknown Identifier"
 	Vcl_Consts_SDockZoneVersionConflict,	L"Error loading dock zone from the stream. Expecting version %d, but found %d."
 	Vcl_Consts_STextNotFound,	L"Text not found: \"%s\""
 	Vcl_Consts_SPromptArrayTooShort,	L"Length of value array must be >= length of prompt array"
@@ -1135,9 +1137,9 @@ BEGIN
 END
 
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Controls.res */
-/* C:\Desenvolvimento\OpenSource\Delphi\SynEdit\Source\SynEdit.res */
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Buttons.res */
-/* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\demo\fMain.DFM */
+/* C:\Desenvolvimento\OpenSource\Delphi\SynEdit\Source\SynEdit.res */
+/* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\src\Frm_GotoLine.dfm */
 /* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\src\FrameEditor.dfm */
 /* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\demo\TestApplication.RES */
 /* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\demo\TestApplication.drf */

@@ -2,14 +2,14 @@ program TestApplication;
 
 uses
   Forms,
-  fMain in 'fMain.pas' {Frm_Main},
   RegisterPlugins in '..\src\Plugins\RegisterPlugins.pas',
   uPSI_Dialogs in '..\src\Plugins\uPSI_Dialogs.pas',
   FrameEditor in '..\src\FrameEditor.pas' {Frm_Editor: TFrame},
   PSResources in '..\src\PSResources.pas',
   uPSI_SysUtils in '..\src\Plugins\uPSI_SysUtils.pas',
   uPSI_Utils in '..\src\Plugins\uPSI_Utils.pas',
-  PSMethods in '..\src\PSMethods.pas';
+  PSMethods in '..\src\PSMethods.pas',
+  Frm_GotoLine in '..\src\Frm_GotoLine.pas' {Frm_GoToLine};
 
 {$R *.RES}
 

@@ -34,7 +34,6 @@ type
     N6: TMenuItem;
     Gotolinenumber1: TMenuItem;
     Run1: TMenuItem;
-    Syntaxcheck1: TMenuItem;
     Compile1: TMenuItem;
     Decompile1: TMenuItem;
     N5: TMenuItem;
@@ -51,12 +50,32 @@ type
     ActionList1: TActionList;
     acSave: TAction;
     PSCustomPlugin: TPSCustomPlugin;
-    procedure Compile1Click(Sender: TObject);
-    procedure RunClick(Sender: TObject);
-    procedure Open1Click(Sender: TObject);
-    procedure acSaveExecute(Sender: TObject);
+    acSaveAs: TAction;
+    acNew: TAction;
+    acOpen: TAction;
+    acExit: TAction;
+    acReset: TAction;
+    acFind: TAction;
+    acReplace: TAction;
+    acFindNext: TAction;
+    acGoToLine: TAction;
+    acCompile: TAction;
+    acDecompile: TAction;
+    acStepOver: TAction;
+    acStepInto: TAction;
+    acPause: TAction;
+    acRun: TAction;
     procedure PSScriptCompile(Sender: TPSScript);
     procedure PSScriptExecute(Sender: TPSScript);
+    procedure acSaveExecute(Sender: TObject);
+    procedure acNewExecute(Sender: TObject);
+    procedure acOpenExecute(Sender: TObject);
+    procedure acSaveAsExecute(Sender: TObject);
+    procedure acExitExecute(Sender: TObject);
+    procedure acResetExecute(Sender: TObject);
+    procedure acCompileExecute(Sender: TObject);
+    procedure acRunExecute(Sender: TObject);
+    procedure acGoToLineExecute(Sender: TObject);
   private
     FActiveFile: TFileName;
     function Compile: Boolean;
@@ -77,18 +96,110 @@ implementation
 
 {$R *.dfm}
 
-uses PSResources, RegisterPlugins;
+uses PSResources, RegisterPlugins, Frm_GotoLine;
 
 { TFrame1 }
 
-procedure TFrm_Editor.Compile1Click(Sender: TObject);
+procedure TFrm_Editor.acCompileExecute(Sender: TObject);
 begin
   Compile;
 end;
 
+procedure TFrm_Editor.acExitExecute(Sender: TObject);
+begin
+  acReset.Execute;
+
+  if SaveCheck then
+  begin
+    Close;
+  end;
+end;
+
+procedure TFrm_Editor.acGoToLineExecute(Sender: TObject);
+begin
+  with TFrm_GoToLine.Create(Editor.CaretX, Editor.CaretY) do
+  try
+    if Execute then
+    begin
+      Editor.CaretXY := CaretXY;
+    end;
+  finally
+    Free;
+    Editor.SetFocus;
+  end;
+end;
+
+procedure TFrm_Editor.acNewExecute(Sender: TObject);
+begin
+  if SaveCheck then
+  begin
+    Editor.ClearAll;
+    Editor.Lines.Text := sEmptyProgram;
+    Editor.Modified := False;
+    FActiveFile := EmptyStr;
+  end;
+end;
+
+procedure TFrm_Editor.acOpenExecute(Sender: TObject);
+begin
+ if SaveCheck then
+  begin
+    if OpenDialog1.Execute then
+    begin
+      Editor.ClearAll;
+      Editor.Lines.LoadFromFile(OpenDialog1.FileName);
+      Editor.Modified := False;
+      FActiveFile := OpenDialog1.FileName;
+    end;
+  end;
+end;
+
+procedure TFrm_Editor.acResetExecute(Sender: TObject);
+begin
+  if PSScript.Exec.Status in isRunningOrPaused then
+  begin
+    PSScript.Stop;
+  end;
+end;
+
+procedure TFrm_Editor.acRunExecute(Sender: TObject);
+begin
+  if Compile then
+  begin
+    if PSScript.Execute then
+    begin
+      Messages.Lines.Add(sSuccessfullyExecuted);
+    end else
+    begin
+      Messages.Lines.Add(Format(sRuntimeError,
+                                ['[empty]', PSScript.ExecErrorRow, PSScript.ExecErrorCol,
+                                 PSScript.ExecErrorProcNo, PSScript.ExecErrorByteCodePosition,
+                                 PSScript.ExecErrorToString]));
+    end;
+  end;
+end;
+
+procedure TFrm_Editor.acSaveAsExecute(Sender: TObject);
+begin
+  if SaveDialog1.Execute then
+  begin
+    FActiveFile := SaveDialog1.FileName;
+    Editor.Lines.SaveToFile(FActiveFile);
+    Editor.Modified := False;
+  end;
+end;
+
 procedure TFrm_Editor.acSaveExecute(Sender: TObject);
 begin
-//
+  if FActiveFile <> EmptyStr then
+  begin
+    Editor.Lines.SaveToFile(FActiveFile);
+    Editor.Modified := False;
+  end
+  else
+  begin
+    acSaveAs.Execute;
+  end;
 end;
 
 function TFrm_Editor.Compile: Boolean;
@@ -134,23 +245,6 @@ begin
   end;
 end;
 
-procedure TFrm_Editor.RunClick(Sender: TObject);
-begin
-  if Compile then
-  begin
-    if PSScript.Execute then
-    begin
-      Messages.Lines.Add(sSuccessfullyExecuted);
-    end else
-    begin
-      Messages.Lines.Add(Format(sRuntimeError,
-                                ['[empty]', PSScript.ExecErrorRow, PSScript.ExecErrorCol,
-                                 PSScript.ExecErrorProcNo, PSScript.ExecErrorByteCodePosition,
-                                 PSScript.ExecErrorToString]));
-    end;
-  end;
-end;
-
 function TFrm_Editor.SaveCheck: Boolean;
 begin
   if Editor.Modified then
@@ -178,20 +272,6 @@ begin
   Caption := sEditorTitle;
 
   RegisterPlugins;
-end;
-
-procedure TFrm_Editor.Open1Click(Sender: TObject);
-begin
- if SaveCheck then
-  begin
-    if OpenDialog1.Execute then
-    begin
-      Editor.ClearAll;
-      Editor.Lines.LoadFromFile(OpenDialog1.FileName);
-      Editor.Modified := False;
-      FActiveFile := OpenDialog1.FileName;
-    end;
-  end;
 end;
 
 procedure TFrm_Editor.PSScriptCompile(Sender: TPSScript);

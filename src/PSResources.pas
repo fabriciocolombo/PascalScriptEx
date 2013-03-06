@@ -2,6 +2,8 @@ unit PSResources;
 
 interface
 
+uses SysUtils, uPSRunTime;
+
 resourcestring
   sBeginCompile = 'Compiling';
   sSuccessfullyCompiled = 'Succesfully compiled';
@@ -13,6 +15,12 @@ resourcestring
   sEditorTitleRunning = 'Editor - Running';
   sInputBoxTiyle = 'Script';
   sFileNotSaved = 'File has not been saved, save now?';
+  sEmptyProgram = 'Program myprogram;' + sLineBreak +
+                  'begin' + sLineBreak +
+                  'end.';
+
+const
+  isRunningOrPaused = [isRunning, isPaused];
 
 implementation
 
