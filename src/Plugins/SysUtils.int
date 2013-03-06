@@ -1,0 +1,2322 @@
+{ *********************************************************************** }
+{                                                                         }
+{ Delphi / Kylix Cross-Platform Runtime Library                           }
+{ System Utilities Unit                                                   }
+{                                                                         }
+{ Copyright (c) 1995-2002 Borland Softwrare Corporation                   }
+{                                                                         }
+{ *********************************************************************** }
+
+unit SysUtils;
+
+interface
+
+const
+{ File open modes }
+
+  fmOpenRead       = $0000;
+  fmOpenWrite      = $0001;
+  fmOpenReadWrite  = $0002;
+
+  fmShareCompat    = $0000 ; // DOS compatibility mode is not portable
+  fmShareExclusive = $0010;
+  fmShareDenyWrite = $0020;
+  fmShareDenyRead  = $0030 ; // write-only not supported on all platforms
+  fmShareDenyNone  = $0040;
+
+{ File attribute constants }
+
+  faReadOnly  = $00000001 ;
+  faHidden    = $00000002 ;
+  faSysFile   = $00000004 ;
+  faVolumeID  = $00000008 ;
+  faDirectory = $00000010;
+  faArchive   = $00000020 ;
+  faSymLink   = $00000040 ;
+  faAnyFile   = $0000003F;
+
+{ Units of time }
+
+  HoursPerDay   = 24;
+  MinsPerHour   = 60;
+  SecsPerMin    = 60;
+  MSecsPerSec   = 1000;
+  MinsPerDay    = 1440;
+  SecsPerDay    = 86400;
+  MSecsPerDay   = 86400000;
+
+{ Days between 1/1/0001 and 12/31/1899 }
+
+  DateDelta = 693594;
+
+{ Days between TDateTime basis (12/31/1899) and Unix time_t basis (1/1/1970) }
+
+  UnixDateDelta = 25569;
+
+type
+
+{ Standard Character set type }
+
+  TSysCharSet = set of Char;
+
+{ Set access to an integer }
+
+  TIntegerSet = set of 0..SizeOf(Integer) * 8 - 1;
+
+  TFileName = type string;
+
+{ Search record used by FindFirst, FindNext, and FindClose }
+
+  TSearchRec = record
+    Time: Integer;
+    Size: Integer;
+    Attr: Integer;
+    Name: TFileName;
+    ExcludeAttr: Integer;
+    FindHandle: THandle  ;
+    FindData: TWin32FindData  ;
+
+  end;
+
+{ FloatToText, FloatToTextFmt, TextToFloat, and FloatToDecimal type codes }
+
+  TFloatValue = (fvExtended, fvCurrency);
+
+{ FloatToText format codes }
+
+  TFloatFormat = (ffGeneral, ffExponent, ffFixed, ffNumber, ffCurrency);
+
+{ FloatToDecimal result record }
+
+  TFloatRec = record
+    Exponent: Smallint;
+    Negative: Boolean;
+    Digits: array[0..20] of Char;
+  end;
+
+{ Date and time record }
+
+  TTimeStamp = record
+    Time: Integer;      { Number of milliseconds since midnight }
+    Date: Integer;      { One plus number of days since 1/1/0001 }
+  end;
+
+{ MultiByte Character Set (MBCS) byte type }
+  TMbcsByteType = (mbSingleByte, mbLeadByte, mbTrailByte);
+
+{ System Locale information record }
+  TSysLocale = record
+    DefaultLCID: Integer;
+    PriLangID: Integer;
+    SubLangID: Integer;
+    FarEast: Boolean;
+    MiddleEast: Boolean;
+  end;
+
+{$IFDEF MSWINDOWS}
+{ This is used by TLanguages }
+  TLangRec = record
+    FName: string;
+    FLCID: LCID;
+    FExt: string;
+  end;
+
+{ This stores the languages that the system supports }
+  TLanguages = class
+  private
+    FSysLangs: array of TLangRec;
+    function LocalesCallback(LocaleID: PChar): Integer; stdcall;
+    function GetExt(Index: Integer): string;
+    function GetID(Index: Integer): string;
+    function GetLCID(Index: Integer): LCID;
+    function GetName(Index: Integer): string;
+    function GetNameFromLocaleID(ID: LCID): string;
+    function GetNameFromLCID(const ID: string): string;
+    function GetCount: integer;
+  public
+    constructor Create;
+    function IndexOf(ID: LCID): Integer;
+    property Count: Integer read GetCount;
+    property Name[Index: Integer]: string read GetName;
+    property NameFromLocaleID[ID: LCID]: string read GetNameFromLocaleID;
+    property NameFromLCID[const ID: string]: string read GetNameFromLCID;
+    property ID[Index: Integer]: string read GetID;
+    property LocaleID[Index: Integer]: LCID read GetLCID;
+    property Ext[Index: Integer]: string read GetExt;
+  end ;
+{$ENDIF}
+
+{$IFDEF LINUX}
+  TEraRange = record
+    StartDate : Integer;         // whole days since 12/31/1899 (TDateTime basis)
+    EndDate   : Integer;         // whole days since 12/31/1899 (TDateTime basis)
+//    Direction : Char;
+  end;
+{$ENDIF}
+
+{ Exceptions }
+
+  Exception = class(TObject)
+  private
+    FMessage: string;
+    FHelpContext: Integer;
+  public
+    constructor Create(const Msg: string);
+    constructor CreateFmt(const Msg: string; const Args: array of const);
+    constructor CreateRes(Ident: Integer);
+    constructor CreateResStr(ResStringRec: PResStringRec);
+    constructor CreateResFmt(Ident: Integer; const Args: array of const);
+    constructor CreateResFmtStr(ResStringRec: PResStringRec; const Args: array of const);
+    constructor CreateHelp(const Msg: string; AHelpContext: Integer);
+    constructor CreateFmtHelp(const Msg: string; const Args: array of const;
+      AHelpContext: Integer);
+    constructor CreateResHelp(Ident: Integer; AHelpContext: Integer);
+    constructor CreateResStrHelp(ResStringRec: PResStringRec; AHelpContext: Integer);
+    constructor CreateResFmtHelp(ResStringRec: PResStringRec; const Args: array of const;
+      AHelpContext: Integer);
+    constructor CreateResStrFmtHelp(Ident: Integer; const Args: array of const;
+      AHelpContext: Integer);
+    property HelpContext: Integer read FHelpContext write FHelpContext;
+    property Message: string read FMessage write FMessage;
+  end;
+
+  ExceptClass = class of Exception;
+
+  EAbort = class(Exception);
+
+  EHeapException = class(Exception)
+  private
+    AllowFree: Boolean;
+  public
+    procedure FreeInstance; override;
+  end;
+
+  EOutOfMemory = class(EHeapException);
+
+  EInOutError = class(Exception)
+  public
+    ErrorCode: Integer;
+  end;
+
+  EExternal = class(Exception)
+  public
+    ExceptionRecord: PExceptionRecord ;
+  end;
+
+  EExternalException = class(EExternal);
+
+  EIntError = class(EExternal);
+  EDivByZero = class(EIntError);
+  ERangeError = class(EIntError);
+  EIntOverflow = class(EIntError);
+
+  EMathError = class(EExternal);
+  EInvalidOp = class(EMathError);
+  EZeroDivide = class(EMathError);
+  EOverflow = class(EMathError);
+  EUnderflow = class(EMathError);
+
+  EInvalidPointer = class(EHeapException);
+
+  EInvalidCast = class(Exception);
+
+  EConvertError = class(Exception);
+
+  EAccessViolation = class(EExternal);
+  EPrivilege = class(EExternal);
+  EStackOverflow = class(EExternal)
+    end;
+  EControlC = class(EExternal);
+{$IFDEF LINUX}
+  EQuit = class(EExternal) end ;
+{$ENDIF}
+
+{$IFDEF LINUX}
+  ECodesetConversion = class(Exception) end ;
+{$ENDIF}
+
+  EVariantError = class(Exception);
+
+  EPropReadOnly = class(Exception);
+  EPropWriteOnly = class(Exception);
+
+  EAssertionFailed = class(Exception);
+
+{$IFNDEF PC_MAPPED_EXCEPTIONS}
+  EAbstractError = class(Exception) end ;
+{$ENDIF}
+
+  EIntfCastError = class(Exception);
+
+  EInvalidContainer = class(Exception);
+  EInvalidInsert = class(Exception);
+
+  EPackageError = class(Exception);
+
+  EOSError = class(Exception)
+  public
+    ErrorCode: DWORD;
+  end;
+{$IFDEF MSWINDOWS}
+  EWin32Error = class(EOSError)
+  end ;
+{$ENDIF}
+
+  ESafecallException = class(Exception);
+
+type
+    { TSignalState is the state of a given signal handler, as returned by
+      InquireSignal.  See InquireSignal, below.
+    }
+    TSignalState = (ssNotHooked, ssHooked, ssOverridden);
+
+var
+
+  {
+    If DeferUserInterrupts is set, we do not raise either SIGINT or SIGQUIT as
+    an exception, instead, we set SIGINTIssued or SIGQUITIssued when the
+    signal arrives, and swallow the signal where the OS issued it.  This gives
+    GUI applications the chance to defer the actual handling of the signal
+    until a time when it is safe to do so.
+  }
+
+  DeferUserInterrupts: Boolean;
+  SIGINTIssued: Boolean;
+  SIGQUITIssued: Boolean;
+{$ENDIF}
+
+{$IFDEF LINUX}
+const
+  MAX_PATH = 4095;  // From /usr/include/linux/limits.h PATH_MAX
+{$ENDIF}
+
+var
+
+{ Empty string and null string pointer. These constants are provided for
+  backwards compatibility only.  }
+
+  EmptyStr: string = '';
+
+  EmptyWideStr: WideString = '';
+
+{$IFDEF MSWINDOWS}
+{ Win32 platform identifier.  This will be one of the following values:
+
+    VER_PLATFORM_WIN32s
+    VER_PLATFORM_WIN32_WINDOWS
+    VER_PLATFORM_WIN32_NT
+
+  See WINDOWS.PAS for the numerical values. }
+
+  Win32Platform: Integer = 0;
+
+{ Win32 OS version information -
+
+  see TOSVersionInfo.dwMajorVersion/dwMinorVersion/dwBuildNumber }
+
+  Win32MajorVersion: Integer = 0;
+  Win32MinorVersion: Integer = 0;
+  Win32BuildNumber: Integer = 0;
+
+{ Win32 OS extra version info string -
+
+  see TOSVersionInfo.szCSDVersion }
+
+  Win32CSDVersion: string = '';
+
+{ Win32 OS version tester }
+
+function CheckWin32Version(AMajor: Integer; AMinor: Integer = 0): Boolean;
+
+{ GetFileVersion returns the most significant 32 bits of a file's binary
+  version number. Typically, this includes the major and minor version placed
+  together in one 32-bit integer. It generally does not include the release
+  or build numbers. It returns Cardinal(-1) if it failed. }
+function GetFileVersion(const AFileName: string): Cardinal;
+
+{$ENDIF}
+
+{ Thread safe currency and date/time formatting
+
+  The TFormatSettings record is designed to allow thread safe formatting,
+  equivalent to the gloabal variables described above. Each of the
+  formatting routines that use the gloabal variables have overloaded
+  equivalents, requiring an additional parameter of type TFormatSettings.
+
+  A TFormatSettings record must be populated before use. This can be done
+  using the GetLocaleFormatSettings function, which will populate the
+  record with values based on the given locale (using the Win32 API
+  function GetLocaleInfo). Note that some format specifiers still require
+  specific thread locale settings (such as period/era names).
+}
+
+type
+  TFormatSettings = record
+    CurrencyFormat: Byte;
+    NegCurrFormat: Byte;
+    ThousandSeparator: Char;
+    DecimalSeparator: Char;
+    CurrencyDecimals: Byte;
+    DateSeparator: Char;
+    TimeSeparator: Char;
+    ListSeparator: Char;
+    CurrencyString: string;
+    ShortDateFormat: string;
+    LongDateFormat: string;
+    TimeAMString: string;
+    TimePMString: string;
+    ShortTimeFormat: string;
+    LongTimeFormat: string;
+    ShortMonthNames: array[1..12] of string;
+    LongMonthNames: array[1..12] of string;
+    ShortDayNames: array[1..7] of string;
+    LongDayNames: array[1..7] of string;
+    TwoDigitYearCenturyWindow: Word;
+  end;
+
+const
+  MaxEraCount = 7;
+
+const
+  PathDelim  = '\';
+  DriveDelim = ':';
+  PathSep    = ';';
+
+{$IFDEF MSWINDOWS}
+function Languages: TLanguages;
+{$ENDIF}
+
+{ Memory management routines }
+
+{ AllocMem allocates a block of the given size on the heap. Each byte in
+  the allocated buffer is set to zero. To dispose the buffer, use the
+  FreeMem standard procedure. }
+
+function AllocMem(Size: Cardinal): Pointer;
+
+{ Exit procedure handling }
+
+{ AddExitProc adds the given procedure to the run-time library's exit
+  procedure list. When an application terminates, its exit procedures are
+  executed in reverse order of definition, i.e. the last procedure passed
+  to AddExitProc is the first one to get executed upon termination. }
+
+procedure AddExitProc(Proc: TProcedure);
+
+{ String handling routines }
+
+{ NewStr allocates a string on the heap. NewStr is provided for backwards
+  compatibility only. }
+
+function NewStr(const S: string): PString;
+
+{ DisposeStr disposes a string pointer that was previously allocated using
+  NewStr. DisposeStr is provided for backwards compatibility only. }
+
+procedure DisposeStr(P: PString);
+
+{ AssignStr assigns a new dynamically allocated string to the given string
+  pointer. AssignStr is provided for backwards compatibility only. }
+
+procedure AssignStr(var P: PString; const S: string);
+
+{ AppendStr appends S to the end of Dest. AppendStr is provided for
+  backwards compatibility only. Use "Dest := Dest + S" instead. }
+
+procedure AppendStr(var Dest: string; const S: string);
+
+{ UpperCase converts all ASCII characters in the given string to upper case.
+  The conversion affects only 7-bit ASCII characters between 'a' and 'z'. To
+  convert 8-bit international characters, use AnsiUpperCase. }
+
+function UpperCase(const S: string): string;
+
+{ LowerCase converts all ASCII characters in the given string to lower case.
+  The conversion affects only 7-bit ASCII characters between 'A' and 'Z'. To
+  convert 8-bit international characters, use AnsiLowerCase. }
+
+function LowerCase(const S: string): string;
+
+{ CompareStr compares S1 to S2, with case-sensitivity. The return value is
+  less than 0 if S1 < S2, 0 if S1 = S2, or greater than 0 if S1 > S2. The
+  compare operation is based on the 8-bit ordinal value of each character
+  and is not affected by the current user locale. }
+
+function CompareStr(const S1, S2: string): Integer;
+
+{ CompareMem performs a binary compare of Length bytes of memory referenced
+  by P1 to that of P2.  CompareMem returns True if the memory referenced by
+  P1 is identical to that of P2. }
+
+function CompareMem(P1, P2: Pointer; Length: Integer): Boolean; assembler;
+
+{ CompareText compares S1 to S2, without case-sensitivity. The return value
+  is the same as for CompareStr. The compare operation is based on the 8-bit
+  ordinal value of each character, after converting 'a'..'z' to 'A'..'Z',
+  and is not affected by the current user locale. }
+
+function CompareText(const S1, S2: string): Integer;
+
+{ SameText compares S1 to S2, without case-sensitivity. Returns true if
+  S1 and S2 are the equal, that is, if CompareText would return 0. SameText
+  has the same 8-bit limitations as CompareText }
+
+function SameText(const S1, S2: string): Boolean;
+
+{ AnsiUpperCase converts all characters in the given string to upper case.
+  The conversion uses the current user locale. }
+
+function AnsiUpperCase(const S: string): string;
+
+{ AnsiLowerCase converts all characters in the given string to lower case.
+  The conversion uses the current user locale. }
+
+function AnsiLowerCase(const S: string): string;
+
+{ AnsiCompareStr compares S1 to S2, with case-sensitivity. The compare
+  operation is controlled by the current user locale. The return value
+  is the same as for CompareStr. }
+
+function AnsiCompareStr(const S1, S2: string): Integer;
+
+{ AnsiSameStr compares S1 to S2, with case-sensitivity. The compare
+  operation is controlled by the current user locale. The return value
+  is True if AnsiCompareStr would have returned 0. }
+
+function AnsiSameStr(const S1, S2: string): Boolean;
+
+{ AnsiCompareText compares S1 to S2, without case-sensitivity. The compare
+  operation is controlled by the current user locale. The return value
+  is the same as for CompareStr. }
+
+function AnsiCompareText(const S1, S2: string): Integer;
+
+{ AnsiSameText compares S1 to S2, without case-sensitivity. The compare
+  operation is controlled by the current user locale. The return value
+  is True if AnsiCompareText would have returned 0. }
+
+function AnsiSameText(const S1, S2: string): Boolean;
+
+{ AnsiStrComp compares S1 to S2, with case-sensitivity. The compare
+  operation is controlled by the current user locale. The return value
+  is the same as for CompareStr. }
+
+function AnsiStrComp(S1, S2: PChar): Integer;
+
+{ AnsiStrIComp compares S1 to S2, without case-sensitivity. The compare
+  operation is controlled by the current user locale. The return value
+  is the same as for CompareStr. }
+
+function AnsiStrIComp(S1, S2: PChar): Integer;
+
+{ AnsiStrLComp compares S1 to S2, with case-sensitivity, up to a maximum
+  length of MaxLen bytes. The compare operation is controlled by the
+  current user locale. The return value is the same as for CompareStr. }
+
+function AnsiStrLComp(S1, S2: PChar; MaxLen: Cardinal): Integer;
+
+{ AnsiStrLIComp compares S1 to S2, without case-sensitivity, up to a maximum
+  length of MaxLen bytes. The compare operation is controlled by the
+  current user locale. The return value is the same as for CompareStr. }
+
+function AnsiStrLIComp(S1, S2: PChar; MaxLen: Cardinal): Integer;
+
+{ AnsiStrLower converts all characters in the given string to lower case.
+  The conversion uses the current user locale. }
+
+function AnsiStrLower(Str: PChar): PChar;
+
+{ AnsiStrUpper converts all characters in the given string to upper case.
+  The conversion uses the current user locale. }
+
+function AnsiStrUpper(Str: PChar): PChar;
+
+{ AnsiLastChar returns a pointer to the last full character in the string.
+  This function supports multibyte characters  }
+
+function AnsiLastChar(const S: string): PChar;
+
+{ AnsiStrLastChar returns a pointer to the last full character in the string.
+  This function supports multibyte characters.  }
+
+function AnsiStrLastChar(P: PChar): PChar;
+
+{ WideUpperCase converts all characters in the given string to upper case. }
+
+function WideUpperCase(const S: WideString): WideString;
+
+{ WideLowerCase converts all characters in the given string to lower case. }
+
+function WideLowerCase(const S: WideString): WideString;
+
+{ WideCompareStr compares S1 to S2, with case-sensitivity. The return value
+  is the same as for CompareStr. }
+
+function WideCompareStr(const S1, S2: WideString): Integer;
+
+{ WideSameStr compares S1 to S2, with case-sensitivity. The return value
+  is True if WideCompareStr would have returned 0. }
+
+function WideSameStr(const S1, S2: WideString): Boolean;
+
+{ WideCompareText compares S1 to S2, without case-sensitivity. The return value
+  is the same as for CompareStr. }
+
+function WideCompareText(const S1, S2: WideString): Integer;
+
+{ WideSameText compares S1 to S2, without case-sensitivity. The return value
+  is True if WideCompareText would have returned 0. }
+
+function WideSameText(const S1, S2: WideString): Boolean;
+
+{ Trim trims leading and trailing spaces and control characters from the
+  given string. }
+
+function Trim(const S: string): string;
+function TrimWide(const S: WideString): WideString;
+
+{ TrimLeft trims leading spaces and control characters from the given
+  string. }
+
+function TrimLeft(const S: string): string;
+function TrimLeftWide(const S: WideString): WideString;
+
+{ TrimRight trims trailing spaces and control characters from the given
+  string. }
+
+function TrimRight(const S: string): string;
+function TrimRightWide(const S: WideString): WideString;
+
+{ QuotedStr returns the given string as a quoted string. A single quote
+  character is inserted at the beginning and the end of the string, and
+  for each single quote character in the string, another one is added. }
+
+function QuotedStr(const S: string): string;
+
+{ AnsiQuotedStr returns the given string as a quoted string, using the
+  provided Quote character.  A Quote character is inserted at the beginning
+  and end of the string, and each Quote character in the string is doubled.
+  This function supports multibyte character strings (MBCS). }
+
+function AnsiQuotedStr(const S: string; Quote: Char): string;
+
+{ AnsiExtractQuotedStr removes the Quote characters from the beginning and end
+  of a quoted string, and reduces pairs of Quote characters within the quoted
+  string to a single character. If the first character in Src is not the Quote
+  character, the function returns an empty string.  The function copies
+  characters from the Src to the result string until the second solitary
+  Quote character or the first null character in Src. The Src parameter is
+  updated to point to the first character following the quoted string.  If
+  the Src string does not contain a matching end Quote character, the Src
+  parameter is updated to point to the terminating null character in Src.
+  This function supports multibyte character strings (MBCS).  }
+
+function AnsiExtractQuotedStr(var Src: PChar; Quote: Char): string;
+
+{ AnsiDequotedStr is a simplified version of AnsiExtractQuotedStr }
+
+function AnsiDequotedStr(const S: string; AQuote: Char): string;
+
+{ AdjustLineBreaks adjusts all line breaks in the given string to the
+  indicated style.
+  When Style is tlbsCRLF, the function changes all
+  CR characters not followed by LF and all LF characters not preceded
+  by a CR into CR/LF pairs.
+  When Style is tlbsLF, the function changes all CR/LF pairs and CR characters
+  not followed by LF to LF characters. }
+
+function AdjustLineBreaks(const S: string; Style: TTextLineBreakStyle = tlbsCRLF): string;
+
+{ IsValidIdent returns true if the given string is a valid identifier. An
+  identifier is defined as a character from the set ['A'..'Z', 'a'..'z', '_']
+  followed by zero or more characters from the set ['A'..'Z', 'a'..'z',
+  '0..'9', '_']. }
+
+function IsValidIdent(const Ident: string): Boolean;
+
+{ IntToStr converts the given value to its decimal string representation. }
+
+function IntToStr(Value: Integer): string;
+function Int64ToStr(Value: Int64): string;
+
+{ IntToHex converts the given value to a hexadecimal string representation
+  with the minimum number of digits specified. }
+
+function IntToHex(Value: Integer; Digits: Integer): string;
+function Int64ToHex(Value: Int64; Digits: Integer): string;
+
+{ StrToInt converts the given string to an integer value. If the string
+  doesn't contain a valid value, an EConvertError exception is raised. }
+
+function StrToInt(const S: string): Integer;
+function StrToIntDef(const S: string; Default: Integer): Integer;
+function TryStrToInt(const S: string; out Value: Integer): Boolean;
+
+{ Similar to the above functions but for Int64 instead }
+
+function StrToInt64(const S: string): Int64;
+function StrToInt64Def(const S: string; const Default: Int64): Int64;
+function TryStrToInt64(const S: string; out Value: Int64): Boolean;
+
+{ StrToBool converts the given string to a boolean value.  If the string
+  doesn't contain a valid value, an EConvertError exception is raised.
+  BoolToStr converts boolean to a string value that in turn can be converted
+  back into a boolean.  BoolToStr will always pick the first element of
+  the TrueStrs/FalseStrs arrays. }
+
+const
+  DefaultTrueBoolStr = 'True';   // DO NOT LOCALIZE
+  DefaultFalseBoolStr = 'False'; // DO NOT LOCALIZE
+
+function StrToBool(const S: string): Boolean;
+function StrToBoolDef(const S: string; const Default: Boolean): Boolean;
+function TryStrToBool(const S: string; out Value: Boolean): Boolean;
+
+function BoolToStr(B: Boolean; UseBoolStrs: Boolean = False): string;
+
+{ LoadStr loads the string resource given by Ident from the application's
+  executable file or associated resource module. If the string resource
+  does not exist, LoadStr returns an empty string. }
+
+function LoadStr(Ident: Integer): string;
+
+{ FmtLoadStr loads the string resource given by Ident from the application's
+  executable file or associated resource module, and uses it as the format
+  string in a call to the Format function with the given arguments. }
+
+function FmtLoadStr(Ident: Integer; const Args: array of const): string;
+
+{ File management routines }
+
+{ FileOpen opens the specified file using the specified access mode. The
+  access mode value is constructed by OR-ing one of the fmOpenXXXX constants
+  with one of the fmShareXXXX constants. If the return value is positive,
+  the function was successful and the value is the file handle of the opened
+  file. A return value of -1 indicates that an error occurred. }
+
+function FileOpen(const FileName: string; Mode: LongWord): Integer;
+
+{ FileCreate creates a new file by the specified name. If the return value
+  is positive, the function was successful and the value is the file handle
+  of the new file. A return value of -1 indicates that an error occurred.
+  On Linux, this calls FileCreate(FileName, DEFFILEMODE) to create
+  the file with read and write access for the current user only.  }
+
+function FileCreate(const FileName: string): Integer;
+
+{ This second version of FileCreate lets you specify the access rights to put on the newly
+  created file.  The access rights parameter is ignored on Win32 }
+
+function FileCreateWithRights(const FileName: string; Rights: Integer): Integer;
+
+function FileSeek(Handle, Offset, Origin: Integer): Integer;
+
+{ FileClose closes the specified file. }
+
+procedure FileClose(Handle: Integer);
+
+{ FileAge returns the date-and-time stamp of the specified file. The return
+  value can be converted to a TDateTime value using the FileDateToDateTime
+  function. The return value is -1 if the file does not exist. }
+
+function FileAge(const FileName: string): Integer;
+
+{ FileExists returns a boolean value that indicates whether the specified
+  file exists. }
+
+function FileExists(const FileName: string): Boolean;
+
+{ DirectoryExists returns a boolean value that indicates whether the
+  specified directory exists (and is actually a directory) }
+
+function DirectoryExists(const Directory: string): Boolean;
+
+{ ForceDirectories ensures that all the directories in a specific path exist.
+  Any portion that does not already exist will be created.  Function result
+  indicates success of the operation.  The function can fail if the current
+  user does not have sufficient file access rights to create directories in
+  the given path.  }
+
+function ForceDirectories(Dir: string): Boolean;
+
+{ FindFirst searches the directory given by Path for the first entry that
+  matches the filename given by Path and the attributes given by Attr. The
+  result is returned in the search record given by SearchRec. The return
+  value is zero if the function was successful. Otherwise the return value
+  is a system error code. After calling FindFirst, always call FindClose.
+  FindFirst is typically used with FindNext and FindClose as follows:
+
+    Result := FindFirst(Path, Attr, SearchRec);
+    while Result = 0 do
+    begin
+      ProcessSearchRec(SearchRec);
+      Result := FindNext(SearchRec);
+    end;
+    FindClose(SearchRec);
+
+  where ProcessSearchRec represents user-defined code that processes the
+  information in a search record. }
+
+function FindFirst(const Path: string; Attr: Integer;
+  var F: TSearchRec): Integer;
+
+{ FindNext returs the next entry that matches the name and attributes
+  specified in a previous call to FindFirst. The search record must be one
+  that was passed to FindFirst. The return value is zero if the function was
+  successful. Otherwise the return value is a system error code. }
+
+function FindNext(var F: TSearchRec): Integer;
+
+{ FindClose terminates a FindFirst/FindNext sequence and frees memory and system
+  resources allocated by FindFirst.
+  Every FindFirst/FindNext must end with a call to FindClose. }
+
+procedure FindClose(var F: TSearchRec);
+
+{ FileGetDate returns the OS date-and-time stamp of the file given by
+  Handle. The return value is -1 if the handle is invalid. The
+  FileDateToDateTime function can be used to convert the returned value to
+  a TDateTime value. }
+
+function FileGetDate(Handle: Integer): Integer;
+
+{ FileSetDate sets the OS date-and-time stamp of the file given by FileName
+  to the value given by Age. The DateTimeToFileDate function can be used to
+  convert a TDateTime value to an OS date-and-time stamp. The return value
+  is zero if the function was successful. Otherwise the return value is a
+  system error code.        }
+
+function FileSetDate(const FileName: string; Age: Integer): Integer;
+
+{$IFDEF MSWINDOWS}
+{  FileSetDate by handle is not available on Unix platforms because there
+  is no standard way to set a file's modification time using only a file
+  handle, and no standard way to obtain the file name of an open
+  file handle.  }
+
+function FileSetDateH(Handle: Integer; Age: Integer): Integer;
+
+{ FileGetAttr returns the file attributes of the file given by FileName. The
+  attributes can be examined by AND-ing with the faXXXX constants defined
+  above. A return value of -1 indicates that an error occurred. }
+
+function FileGetAttr(const FileName: string): Integer;
+
+{ FileSetAttr sets the file attributes of the file given by FileName to the
+  value given by Attr. The attribute value is formed by OR-ing the
+  appropriate faXXXX constants. The return value is zero if the function was
+  successful. Otherwise the return value is a system error code. }
+
+function FileSetAttr(const FileName: string; Attr: Integer): Integer;
+{$ENDIF}
+
+{ FileIsReadOnly tests whether a given file is read-only for the current
+  process and effective user id.  If the file does not exist, the
+  function returns False.  (Check FileExists before calling FileIsReadOnly)
+  This function is platform portable. }
+
+function FileIsReadOnly(const FileName: string): Boolean;
+
+{ FileSetReadOnly sets the read only state of a file.  The file must
+  exist and the current effective user id must be the owner of the file.
+  On Unix systems, FileSetReadOnly attempts to set or remove
+  all three (user, group, and other) write permissions on the file.
+  If you want to grant partial permissions (writeable for owner but not
+  for others), use platform specific functions such as chmod.
+  The function returns True if the file was successfully modified,
+  False if there was an error.  This function is platform portable.  }
+
+function FileSetReadOnly(const FileName: string; ReadOnly: Boolean): Boolean;
+
+{ DeleteFile deletes the file given by FileName. The return value is True if
+  the file was successfully deleted, or False if an error occurred. }
+
+function DeleteFile(const FileName: string): Boolean;
+
+{ RenameFile renames the file given by OldName to the name given by NewName.
+  The return value is True if the file was successfully renamed, or False if
+  an error occurred. }
+
+function RenameFile(const OldName, NewName: string): Boolean;
+
+{ ChangeFileExt changes the extension of a filename. FileName specifies a
+  filename with or without an extension, and Extension specifies the new
+  extension for the filename. The new extension can be a an empty string or
+  a period followed by up to three characters. }
+
+function ChangeFileExt(const FileName, Extension: string): string;
+
+{ ExtractFilePath extracts the drive and directory parts of the given
+  filename. The resulting string is the leftmost characters of FileName,
+  up to and including the colon or backslash that separates the path
+  information from the name and extension. The resulting string is empty
+  if FileName contains no drive and directory parts. }
+
+function ExtractFilePath(const FileName: string): string;
+
+{ ExtractFileDir extracts the drive and directory parts of the given
+  filename. The resulting string is a directory name suitable for passing
+  to SetCurrentDir, CreateDir, etc. The resulting string is empty if
+  FileName contains no drive and directory parts. }
+
+function ExtractFileDir(const FileName: string): string;
+
+{ ExtractFileDrive extracts the drive part of the given filename.  For
+  filenames with drive letters, the resulting string is '<drive>:'.
+  For filenames with a UNC path, the resulting string is in the form
+  '\\<servername>\<sharename>'.  If the given path contains neither
+  style of filename, the result is an empty string. }
+
+function ExtractFileDrive(const FileName: string): string;
+
+{ ExtractFileName extracts the name and extension parts of the given
+  filename. The resulting string is the leftmost characters of FileName,
+  starting with the first character after the colon or backslash that
+  separates the path information from the name and extension. The resulting
+  string is equal to FileName if FileName contains no drive and directory
+  parts. }
+
+function ExtractFileName(const FileName: string): string;
+
+{ ExtractFileExt extracts the extension part of the given filename. The
+  resulting string includes the period character that separates the name
+  and extension parts. The resulting string is empty if the given filename
+  has no extension. }
+
+function ExtractFileExt(const FileName: string): string;
+
+{ ExpandFileName expands the given filename to a fully qualified filename.
+  The resulting string consists of a drive letter, a colon, a root relative
+  directory path, and a filename. Embedded '.' and '..' directory references
+  are removed. }
+
+function ExpandFileName(const FileName: string): string;
+
+{ ExpandFilenameCase returns a fully qualified filename like ExpandFilename,
+  but performs a case-insensitive filename search looking for a close match
+  in the actual file system, differing only in uppercase versus lowercase of
+  the letters.  This is useful to convert lazy user input into useable file
+  names, or to convert filename data created on a case-insensitive file
+  system (Win32) to something useable on a case-sensitive file system (Linux).
+
+  The MatchFound out parameter indicates what kind of match was found in the
+  file system, and what the function result is based upon:
+
+  ( in order of increasing difficulty or complexity )
+  mkExactMatch:  Case-sensitive match.  Result := ExpandFileName(FileName).
+  mkSingleMatch: Exactly one file in the given directory path matches the
+        given filename on a case-insensitive basis.
+        Result := ExpandFileName(FileName as found in file system).
+  mkAmbiguous: More than one file in the given directory path matches the
+        given filename case-insensitively.
+        In many cases, this should be considered an error.
+        Result := ExpandFileName(First matching filename found).
+  mkNone:  File not found at all.  Result := ExpandFileName(FileName).
+
+  Note that because this function has to search the file system it may be
+  much slower than ExpandFileName, particularly when the given filename is
+  ambiguous or does not exist.  Use ExpandFilenameCase only when you have
+  a filename of dubious orgin - such as from user input - and you want
+  to make a best guess before failing.  }
+
+type
+  TFilenameCaseMatch = (mkNone, mkExactMatch, mkSingleMatch, mkAmbiguous);
+
+function ExpandFileNameCase(const FileName: string;
+  out MatchFound: TFilenameCaseMatch): string;
+
+{ ExpandUNCFileName expands the given filename to a fully qualified filename.
+  This function is the same as ExpandFileName except that it will return the
+  drive portion of the filename in the format '\\<servername>\<sharename> if
+  that drive is actually a network resource instead of a local resource.
+  Like ExpandFileName, embedded '.' and '..' directory references are
+  removed. }
+
+function ExpandUNCFileName(const FileName: string): string;
+
+{ ExtractRelativePath will return a file path name relative to the given
+  BaseName.  It strips the common path dirs and adds '..\' on Windows,
+  and '../' on Linux for each level up from the BaseName path. }
+
+function ExtractRelativePath(const BaseName, DestName: string): string;
+
+{$IFDEF MSWINDOWS}
+{ ExtractShortPathName will convert the given filename to the short form
+  by calling the GetShortPathName API.  Will return an empty string if
+  the file or directory specified does not exist }
+
+function ExtractShortPathName(const FileName: string): string;
+{$ENDIF}
+
+{ FileSearch searches for the file given by Name in the list of directories
+  given by DirList. The directory paths in DirList must be separated by
+  PathSep chars. The search always starts with the current directory of the
+  current drive. The returned value is a concatenation of one of the
+  directory paths and the filename, or an empty string if the file could not
+  be located. }
+
+function FileSearch(const Name, DirList: string): string;
+
+{$IFDEF MSWINDOWS}
+{ DiskFree returns the number of free bytes on the specified drive number,
+  where 0 = Current, 1 = A, 2 = B, etc. DiskFree returns -1 if the drive
+  number is invalid. }
+
+function DiskFree(Drive: Byte): Int64;
+
+{ DiskSize returns the size in bytes of the specified drive number, where
+  0 = Current, 1 = A, 2 = B, etc. DiskSize returns -1 if the drive number
+  is invalid. }
+
+function DiskSize(Drive: Byte): Int64;
+{$ENDIF}
+
+{ FileDateToDateTime converts an OS date-and-time value to a TDateTime
+  value. The FileAge, FileGetDate, and FileSetDate routines operate on OS
+  date-and-time values, and the Time field of a TSearchRec used by the
+  FindFirst and FindNext functions contains an OS date-and-time value. }
+
+function FileDateToDateTime(FileDate: Integer): TDateTime;
+
+{ DateTimeToFileDate converts a TDateTime value to an OS date-and-time
+  value. The FileAge, FileGetDate, and FileSetDate routines operate on OS
+  date-and-time values, and the Time field of a TSearchRec used by the
+  FindFirst and FindNext functions contains an OS date-and-time value. }
+
+function DateTimeToFileDate(DateTime: TDateTime): Integer;
+
+{ GetCurrentDir returns the current directory. }
+
+function GetCurrentDir: string;
+
+{ SetCurrentDir sets the current directory. The return value is True if
+  the current directory was successfully changed, or False if an error
+  occurred. }
+
+function SetCurrentDir(const Dir: string): Boolean;
+
+{ CreateDir creates a new directory. The return value is True if a new
+  directory was successfully created, or False if an error occurred. }
+
+function CreateDir(const Dir: string): Boolean;
+
+{ RemoveDir deletes an existing empty directory. The return value is
+  True if the directory was successfully deleted, or False if an error
+  occurred. }
+
+function RemoveDir(const Dir: string): Boolean;
+
+{ PChar routines }
+{ const params help simplify C++ code.  No effect on pascal code }
+
+{ StrLen returns the number of characters in Str, not counting the null
+  terminator. }
+
+function StrLen(const Str: PChar): Cardinal;
+
+{ StrEnd returns a pointer to the null character that terminates Str. }
+
+function StrEnd(const Str: PChar): PChar;
+
+{ StrMove copies exactly Count characters from Source to Dest and returns
+  Dest. Source and Dest may overlap. }
+
+function StrMove(Dest: PChar; const Source: PChar; Count: Cardinal): PChar;
+
+{ StrCopy copies Source to Dest and returns Dest. }
+
+function StrCopy(Dest: PChar; const Source: PChar): PChar;
+
+{ StrECopy copies Source to Dest and returns StrEnd(Dest). }
+
+function StrECopy(Dest:PChar; const Source: PChar): PChar;
+
+{ StrLCopy copies at most MaxLen characters from Source to Dest and
+  returns Dest. }
+
+function StrLCopy(Dest: PChar; const Source: PChar; MaxLen: Cardinal): PChar;
+
+{ StrPCopy copies the Pascal style string Source into Dest and
+  returns Dest. }
+
+function StrPCopy(Dest: PChar; const Source: string): PChar;
+
+{ StrPLCopy copies at most MaxLen characters from the Pascal style string
+  Source into Dest and returns Dest. }
+
+function StrPLCopy(Dest: PChar; const Source: string;
+  MaxLen: Cardinal): PChar;
+
+{ StrCat appends a copy of Source to the end of Dest and returns Dest. }
+
+function StrCat(Dest: PChar; const Source: PChar): PChar;
+
+{ StrLCat appends at most MaxLen - StrLen(Dest) characters from Source to
+  the end of Dest, and returns Dest. }
+
+function StrLCat(Dest: PChar; const Source: PChar; MaxLen: Cardinal): PChar;
+
+{ StrComp compares Str1 to Str2. The return value is less than 0 if
+  Str1 < Str2, 0 if Str1 = Str2, or greater than 0 if Str1 > Str2. }
+
+function StrComp(const Str1, Str2: PChar): Integer;
+
+{ StrIComp compares Str1 to Str2, without case sensitivity. The return
+  value is the same as StrComp. }
+
+function StrIComp(const Str1, Str2: PChar): Integer;
+
+{ StrLComp compares Str1 to Str2, for a maximum length of MaxLen
+  characters. The return value is the same as StrComp. }
+
+function StrLComp(const Str1, Str2: PChar; MaxLen: Cardinal): Integer;
+
+{ StrLIComp compares Str1 to Str2, for a maximum length of MaxLen
+  characters, without case sensitivity. The return value is the same
+  as StrComp. }
+
+function StrLIComp(const Str1, Str2: PChar; MaxLen: Cardinal): Integer;
+
+{ StrScan returns a pointer to the first occurrence of Chr in Str. If Chr
+  does not occur in Str, StrScan returns NIL. The null terminator is
+  considered to be part of the string. }
+
+function StrScan(const Str: PChar; char: Char): PChar;
+
+{ StrRScan returns a pointer to the last occurrence of Chr in Str. If Chr
+  does not occur in Str, StrRScan returns NIL. The null terminator is
+  considered to be part of the string. }
+
+function StrRScan(const Str: PChar; char: Char): PChar;
+
+{ StrPos returns a pointer to the first occurrence of Str2 in Str1. If
+  Str2 does not occur in Str1, StrPos returns NIL. }
+
+function StrPos(const Str1, Str2: PChar): PChar;
+
+{ StrUpper converts Str to upper case and returns Str. }
+
+function StrUpper(Str: PChar): PChar;
+
+{ StrLower converts Str to lower case and returns Str. }
+
+function StrLower(Str: PChar): PChar;
+
+{ StrPas converts Str to a Pascal style string. This function is provided
+  for backwards compatibility only. To convert a null terminated string to
+  a Pascal style string, use a string type cast or an assignment. }
+
+function StrPas(const Str: PChar): string;
+
+{ StrAlloc allocates a buffer of the given size on the heap. The size of
+  the allocated buffer is encoded in a four byte header that immediately
+  preceeds the buffer. To dispose the buffer, use StrDispose. }
+
+function StrAlloc(Size: Cardinal): PChar;
+
+{ StrBufSize returns the allocated size of the given buffer, not including
+  the two byte header. }
+
+function StrBufSize(const Str: PChar): Cardinal;
+
+{ StrNew allocates a copy of Str on the heap. If Str is NIL, StrNew returns
+  NIL and doesn't allocate any heap space. Otherwise, StrNew makes a
+  duplicate of Str, obtaining space with a call to the StrAlloc function,
+  and returns a pointer to the duplicated string. To dispose the string,
+  use StrDispose. }
+
+function StrNew(const Str: PChar): PChar;
+
+{ StrDispose disposes a string that was previously allocated with StrAlloc
+  or StrNew. If Str is NIL, StrDispose does nothing. }
+
+procedure StrDispose(Str: PChar);
+
+{ String formatting routines }
+
+{ The Format routine formats the argument list given by the Args parameter
+  using the format string given by the Format parameter.
+
+  Format strings contain two types of objects--plain characters and format
+  specifiers. Plain characters are copied verbatim to the resulting string.
+  Format specifiers fetch arguments from the argument list and apply
+  formatting to them.
+
+  Format specifiers have the following form:
+
+    "%" [index ":"] ["-"] [width] ["." prec] type
+
+  A format specifier begins with a % character. After the % come the
+  following, in this order:
+
+  -  an optional argument index specifier, [index ":"]
+  -  an optional left-justification indicator, ["-"]
+  -  an optional width specifier, [width]
+  -  an optional precision specifier, ["." prec]
+  -  the conversion type character, type
+
+  The following conversion characters are supported:
+
+  d  Decimal. The argument must be an integer value. The value is converted
+     to a string of decimal digits. If the format string contains a precision
+     specifier, it indicates that the resulting string must contain at least
+     the specified number of digits; if the value has less digits, the
+     resulting string is left-padded with zeros.
+
+  u  Unsigned decimal.  Similar to 'd' but no sign is output.
+
+  e  Scientific. The argument must be a floating-point value. The value is
+     converted to a string of the form "-d.ddd...E+ddd". The resulting
+     string starts with a minus sign if the number is negative, and one digit
+     always precedes the decimal point. The total number of digits in the
+     resulting string (including the one before the decimal point) is given
+     by the precision specifer in the format string--a default precision of
+     15 is assumed if no precision specifer is present. The "E" exponent
+     character in the resulting string is always followed by a plus or minus
+     sign and at least three digits.
+
+  f  Fixed. The argument must be a floating-point value. The value is
+     converted to a string of the form "-ddd.ddd...". The resulting string
+     starts with a minus sign if the number is negative. The number of digits
+     after the decimal point is given by the precision specifier in the
+     format string--a default of 2 decimal digits is assumed if no precision
+     specifier is present.
+
+  g  General. The argument must be a floating-point value. The value is
+     converted to the shortest possible decimal string using fixed or
+     scientific format. The number of significant digits in the resulting
+     string is given by the precision specifier in the format string--a
+     default precision of 15 is assumed if no precision specifier is present.
+     Trailing zeros are removed from the resulting string, and a decimal
+     point appears only if necessary. The resulting string uses fixed point
+     format if the number of digits to the left of the decimal point in the
+     value is less than or equal to the specified precision, and if the
+     value is greater than or equal to 0.00001. Otherwise the resulting
+     string uses scientific format.
+
+  n  Number. The argument must be a floating-point value. The value is
+     converted to a string of the form "-d,ddd,ddd.ddd...". The "n" format
+     corresponds to the "f" format, except that the resulting string
+     contains thousand separators.
+
+  m  Money. The argument must be a floating-point value. The value is
+     converted to a string that represents a currency amount. The conversion
+     is controlled by the CurrencyString, CurrencyFormat, NegCurrFormat,
+     ThousandSeparator, DecimalSeparator, and CurrencyDecimals global
+     variables, all of which are initialized from locale settings provided
+     by the operating system.  For example, Currency Format preferences can be
+     set in the International section of the Windows Control Panel. If the format
+     string contains a precision specifier, it overrides the value given
+     by the CurrencyDecimals global variable.
+
+  p  Pointer. The argument must be a pointer value. The value is converted
+     to a string of the form "XXXX:YYYY" where XXXX and YYYY are the
+     segment and offset parts of the pointer expressed as four hexadecimal
+     digits.
+
+  s  String. The argument must be a character, a string, or a PChar value.
+     The string or character is inserted in place of the format specifier.
+     The precision specifier, if present in the format string, specifies the
+     maximum length of the resulting string. If the argument is a string
+     that is longer than this maximum, the string is truncated.
+
+  x  Hexadecimal. The argument must be an integer value. The value is
+     converted to a string of hexadecimal digits. If the format string
+     contains a precision specifier, it indicates that the resulting string
+     must contain at least the specified number of digits; if the value has
+     less digits, the resulting string is left-padded with zeros.
+
+  Conversion characters may be specified in upper case as well as in lower
+  case--both produce the same results.
+
+  For all floating-point formats, the actual characters used as decimal and
+  thousand separators are obtained from the DecimalSeparator and
+  ThousandSeparator global variables.
+
+  Index, width, and precision specifiers can be specified directly using
+  decimal digit string (for example "%10d"), or indirectly using an asterisk
+  charcater (for example "%*.*f"). When using an asterisk, the next argument
+  in the argument list (which must be an integer value) becomes the value
+  that is actually used. For example "Format('%*.*f', [8, 2, 123.456])" is
+  the same as "Format('%8.2f', [123.456])".
+
+  A width specifier sets the minimum field width for a conversion. If the
+  resulting string is shorter than the minimum field width, it is padded
+  with blanks to increase the field width. The default is to right-justify
+  the result by adding blanks in front of the value, but if the format
+  specifier contains a left-justification indicator (a "-" character
+  preceding the width specifier), the result is left-justified by adding
+  blanks after the value.
+
+  An index specifier sets the current argument list index to the specified
+  value. The index of the first argument in the argument list is 0. Using
+  index specifiers, it is possible to format the same argument multiple
+  times. For example "Format('%d %d %0:d %d', [10, 20])" produces the string
+  '10 20 10 20'.
+
+  The Format function can be combined with other formatting functions. For
+  example
+
+    S := Format('Your total was %s on %s', [
+      FormatFloat('$#,##0.00;;zero', Total),
+      FormatDateTime('mm/dd/yy', Date)]);
+
+  which uses the FormatFloat and FormatDateTime functions to customize the
+  format beyond what is possible with Format.
+
+  Each of the string formatting routines that uses global variables for
+  formatting (separators, decimals, date/time formats etc.), has an
+  overloaded equivalent requiring a parameter of type TFormatSettings. This
+  additional parameter provides the formatting information rather than the
+  global variables. For more information see the notes at TFormatSettings.  }
+
+function Format(const Format: string;
+  const Args: array of const): string;
+function FormatEx(const Format: string; const Args: array of const;
+  const FormatSettings: TFormatSettings): string;
+
+{ FmtStr formats the argument list given by Args using the format string
+  given by Format into the string variable given by Result. For further
+  details, see the description of the Format function. }
+
+procedure FmtStr(var Result: string; const Format: string;
+  const Args: array of const);
+procedure FmtStrEx(var Result: string; const Format: string;
+  const Args: array of const; const FormatSettings: TFormatSettings);
+
+{ StrFmt formats the argument list given by Args using the format string
+  given by Format into the buffer given by Buffer. It is up to the caller to
+  ensure that Buffer is large enough for the resulting string. The returned
+  value is Buffer. For further details, see the description of the Format
+  function. }
+
+function StrFmt(Buffer, Format: PChar;
+  const Args: array of const): PChar;
+function StrFmtEx(Buffer, Format: PChar; const Args: array of const;
+  const FormatSettings: TFormatSettings): PChar;
+
+{ StrLFmt formats the argument list given by Args using the format string
+  given by Format into the buffer given by Buffer. The resulting string will
+  contain no more than MaxBufLen characters, not including the null terminator.
+  The returned value is Buffer. For further details, see the description of
+  the Format function. }
+
+function StrLFmt(Buffer: PChar; MaxBufLen: Cardinal; Format: PChar;
+  const Args: array of const): PChar;
+function StrLFmtEx(Buffer: PChar; MaxBufLen: Cardinal; Format: PChar;
+  const Args: array of const;
+  const FormatSettings: TFormatSettings): PChar;
+
+{ FormatBuf formats the argument list given by Args using the format string
+  given by Format and FmtLen into the buffer given by Buffer and BufLen.
+  The Format parameter is a reference to a buffer containing FmtLen
+  characters, and the Buffer parameter is a reference to a buffer of BufLen
+  characters. The returned value is the number of characters actually stored
+  in Buffer. The returned value is always less than or equal to BufLen. For
+  further details, see the description of the Format function. }
+
+	{ The WideFormat routine formats the argument list given by the Args parameter
+  using the format WideString given by the Format parameter. This routine is
+  the WideString equivalent of Format. For further details, see the description
+  of the Format function. }
+function WideFormat(const Format: WideString;
+  const Args: array of const): WideString;
+function WideFormatEx(const Format: WideString;
+  const Args: array of const;
+  const FormatSettings: TFormatSettings): WideString;
+
+{ WideFmtStr formats the argument list given by Args using the format WideString
+  given by Format into the WideString variable given by Result. For further
+  details, see the description of the Format function. }
+procedure WideFmtStr(var Result: WideString; const Format: WideString;
+  const Args: array of const);
+procedure WideFmtStrEx(var Result: WideString; const Format: WideString;
+  const Args: array of const; const FormatSettings: TFormatSettings);
+
+function FloatToStr(Value: Extended): string;
+function FloatToStrEx(Value: Extended; const FormatSettings: TFormatSettings): string;
+
+{ CurrToStr converts the currency value given by Value to its string
+  representation. The conversion uses general number format. For further
+  details, see the description of the CurrToStrF function. }
+
+function CurrToStr(Value: Currency): string;
+function CurrToStrEx(Value: Currency;
+  const FormatSettings: TFormatSettings): string;
+
+{ FloatToCurr will range validate a value to make sure it falls
+  within the acceptable currency range }
+
+const
+  MinCurrency: Currency = -922337203685477.5807;
+  MaxCurrency: Currency =  922337203685477.5807;
+
+function FloatToCurr(const Value: Extended): Currency;
+function TryFloatToCurr(const Value: Extended; out AResult: Currency): Boolean;
+
+{ FloatToStrF converts the floating-point value given by Value to its string
+  representation. The Format parameter controls the format of the resulting
+  string. The Precision parameter specifies the precision of the given value.
+  It should be 7 or less for values of type Single, 15 or less for values of
+  type Double, and 18 or less for values of type Extended. The meaning of the
+  Digits parameter depends on the particular format selected.
+
+  The possible values of the Format parameter, and the meaning of each, are
+  described below.
+
+  ffGeneral - General number format. The value is converted to the shortest
+  possible decimal string using fixed or scientific format. Trailing zeros
+  are removed from the resulting string, and a decimal point appears only
+  if necessary. The resulting string uses fixed point format if the number
+  of digits to the left of the decimal point in the value is less than or
+  equal to the specified precision, and if the value is greater than or
+  equal to 0.00001. Otherwise the resulting string uses scientific format,
+  and the Digits parameter specifies the minimum number of digits in the
+  exponent (between 0 and 4).
+
+  ffExponent - Scientific format. The value is converted to a string of the
+  form "-d.ddd...E+dddd". The resulting string starts with a minus sign if
+  the number is negative, and one digit always precedes the decimal point.
+  The total number of digits in the resulting string (including the one
+  before the decimal point) is given by the Precision parameter. The "E"
+  exponent character in the resulting string is always followed by a plus
+  or minus sign and up to four digits. The Digits parameter specifies the
+  minimum number of digits in the exponent (between 0 and 4).
+
+  ffFixed - Fixed point format. The value is converted to a string of the
+  form "-ddd.ddd...". The resulting string starts with a minus sign if the
+  number is negative, and at least one digit always precedes the decimal
+  point. The number of digits after the decimal point is given by the Digits
+  parameter--it must be between 0 and 18. If the number of digits to the
+  left of the decimal point is greater than the specified precision, the
+  resulting value will use scientific format.
+
+  ffNumber - Number format. The value is converted to a string of the form
+  "-d,ddd,ddd.ddd...". The ffNumber format corresponds to the ffFixed format,
+  except that the resulting string contains thousand separators.
+
+  ffCurrency - Currency format. The value is converted to a string that
+  represents a currency amount. The conversion is controlled by the
+  CurrencyString, CurrencyFormat, NegCurrFormat, ThousandSeparator, and
+  DecimalSeparator global variables, all of which are initialized from
+  locale settings provided by the operating system.  For example,
+  Currency Format preferences can be set in the International section
+  of the Windows Control Panel.
+  The number of digits after the decimal point is given by the Digits
+  parameter--it must be between 0 and 18.
+
+  For all formats, the actual characters used as decimal and thousand
+  separators are obtained from the DecimalSeparator and ThousandSeparator
+  global variables.
+
+  If the given value is a NAN (not-a-number), the resulting string is 'NAN'.
+  If the given value is positive infinity, the resulting string is 'INF'. If
+  the given value is negative infinity, the resulting string is '-INF'. }
+
+function FloatToStrF(Value: Extended; Format: TFloatFormat;
+  Precision, Digits: Integer): string;
+function FloatToStrFEx(Value: Extended; Format: TFloatFormat;
+  Precision, Digits: Integer;
+  const FormatSettings: TFormatSettings): string;
+
+{ CurrToStrF converts the currency value given by Value to its string
+  representation. A call to CurrToStrF corresponds to a call to
+  FloatToStrF with an implied precision of 19 digits. }
+
+function CurrToStrF(Value: Currency; Format: TFloatFormat;
+  Digits: Integer): string;
+function CurrToStrFEx(Value: Currency; Format: TFloatFormat;
+  Digits: Integer; const FormatSettings: TFormatSettings): string;
+
+function FormatFloat(const Format: string; Value: Extended): string;
+function FormatFloatEx(const Format: string; Value: Extended;
+  const FormatSettings: TFormatSettings): string;
+
+{ FormatCurr formats the currency value given by Value using the format
+  string given by Format. For further details, see the description of the
+  FormatFloat function. }
+
+function FormatCurr(const Format: string; Value: Currency): string;
+function FormatCurrEx(const Format: string; Value: Currency;
+  const FormatSettings: TFormatSettings): string;
+
+function StrToFloat(const S: string): Extended;
+function StrToFloatEx(const S: string;
+  const FormatSettings: TFormatSettings): Extended;
+
+function StrToFloatDef(const S: string;
+  const Default: Extended): Extended;
+function StrToFloatDefEx(const S: string; const Default: Extended;
+  const FormatSettings: TFormatSettings): Extended;
+
+function TryStrToFloat(const S: string; out Value: Extended): Boolean;
+function TryStrToFloatEx(const S: string; out Value: Extended;
+  const FormatSettings: TFormatSettings): Boolean;
+
+function TryStrToFloat(const S: string; out Value: Double): Boolean;
+function TryStrToFloatEx(const S: string; out Value: Double;
+  const FormatSettings: TFormatSettings): Boolean;
+
+function TryStrToFloat(const S: string; out Value: Single): Boolean;
+function TryStrToFloatEx(const S: string; out Value: Single;
+  const FormatSettings: TFormatSettings): Boolean;
+
+{ StrToCurr converts the given string to a currency value. For further
+  details, see the description of the StrToFloat function. }
+
+function StrToCurr(const S: string): Currency;
+function StrToCurrEx(const S: string;
+  const FormatSettings: TFormatSettings): Currency;
+
+function StrToCurrDef(const S: string;
+  const Default: Currency): Currency;
+function StrToCurrDefEx(const S: string; const Default: Currency;
+  const FormatSettings: TFormatSettings): Currency;
+
+function TryStrToCurr(const S: string; out Value: Currency): Boolean;
+function TryStrToCurrEx(const S: string; out Value: Currency;
+  const FormatSettings: TFormatSettings): Boolean;
+
+
+{ Date/time support routines }
+
+function DateTimeToTimeStamp(DateTime: TDateTime): TTimeStamp;
+
+function TimeStampToDateTime(const TimeStamp: TTimeStamp): TDateTime;
+function MSecsToTimeStamp(MSecs: Comp): TTimeStamp;
+function TimeStampToMSecs(const TimeStamp: TTimeStamp): Comp;
+
+{ EncodeDate encodes the given year, month, and day into a TDateTime value.
+  The year must be between 1 and 9999, the month must be between 1 and 12,
+  and the day must be between 1 and N, where N is the number of days in the
+  specified month. If the specified values are not within range, an
+  EConvertError exception is raised. The resulting value is the number of
+  days between 12/30/1899 and the given date. }
+
+function EncodeDate(Year, Month, Day: Word): TDateTime;
+
+{ EncodeTime encodes the given hour, minute, second, and millisecond into a
+  TDateTime value. The hour must be between 0 and 23, the minute must be
+  between 0 and 59, the second must be between 0 and 59, and the millisecond
+  must be between 0 and 999. If the specified values are not within range, an
+  EConvertError exception is raised. The resulting value is a number between
+  0 (inclusive) and 1 (not inclusive) that indicates the fractional part of
+  a day given by the specified time. The value 0 corresponds to midnight,
+  0.5 corresponds to noon, 0.75 corresponds to 6:00 pm, etc. }
+
+function EncodeTime(Hour, Min, Sec, MSec: Word): TDateTime;
+
+{ Instead of generating errors the following variations of EncodeDate and
+  EncodeTime simply return False if the parameters given are not valid.
+  Other than that, these functions are functionally the same as the above
+  functions. }
+
+function TryEncodeDate(Year, Month, Day: Word; out Date: TDateTime): Boolean;
+function TryEncodeTime(Hour, Min, Sec, MSec: Word; out Time: TDateTime): Boolean;
+
+{ DecodeDate decodes the integral (date) part of the given TDateTime value
+  into its corresponding year, month, and day. If the given TDateTime value
+  is less than or equal to zero, the year, month, and day return parameters
+  are all set to zero. }
+
+procedure DecodeDate(const DateTime: TDateTime; var Year, Month, Day: Word);
+
+{ This variation of DecodeDate works similarly to the above function but
+  returns more information.  The result value of this function indicates
+  whether the year decoded is a leap year or not.  }
+
+function DecodeDateFully(const DateTime: TDateTime; var Year, Month, Day,
+  DOW: Word): Boolean;
+
+{$IFDEF LINUX}
+function InternalDecodeDate(const DateTime: TDateTime; var Year, Month, Day, DOW: Word): Boolean;
+{$ENDIF}
+
+{ DecodeTime decodes the fractional (time) part of the given TDateTime value
+  into its corresponding hour, minute, second, and millisecond. }
+
+procedure DecodeTime(const DateTime: TDateTime; var Hour, Min, Sec, MSec: Word);
+
+{$IFDEF MSWINDOWS}
+{ DateTimeToSystemTime converts a date and time from Delphi's TDateTime
+  format into the Win32 API's TSystemTime format. }
+
+procedure DateTimeToSystemTime(const DateTime: TDateTime; var SystemTime: TSystemTime);
+
+{ SystemTimeToDateTime converts a date and time from the Win32 API's
+  TSystemTime format into Delphi's TDateTime format. }
+
+function SystemTimeToDateTime(const SystemTime: TSystemTime): TDateTime;
+{$ENDIF}
+
+{ DayOfWeek returns the day of the week of the given date. The result is an
+  integer between 1 and 7, corresponding to Sunday through Saturday.
+  This function is not ISO 8601 compliant, for that see the DateUtils unit. }
+
+function DayOfWeek(const DateTime: TDateTime): Word;
+
+{ Date returns the current date. }
+
+function Date: TDateTime;
+
+{ Time returns the current time. }
+
+function Time: TDateTime;
+{$IFDEF LINUX}
+  { clashes with Time in <X11/Xlib.h>, use GetTime instead }
+  {$EXTERNALSYM Time}
+{$ENDIF}
+function GetTime: TDateTime;
+
+{ Now returns the current date and time, corresponding to Date + Time. }
+
+function Now: TDateTime;
+
+{ Current year returns the year portion of the date returned by Now }
+
+function CurrentYear: Word;
+
+{ IncMonth returns Date shifted by the specified number of months.
+  NumberOfMonths parameter can be negative, to return a date N months ago.
+  If the input day of month is greater than the last day of the resulting
+  month, the day is set to the last day of the resulting month.
+  Input time of day is copied to the DateTime result.  }
+
+function IncMonth(const DateTime: TDateTime; NumberOfMonths: Integer = 1): TDateTime;
+
+{ Optimized version of IncMonth that works with years, months and days
+  directly.  See above comments for more detail as to what happens to the day
+  when incrementing months }
+
+procedure IncAMonth(var Year, Month, Day: Word; NumberOfMonths: Integer = 1);
+
+{ ReplaceTime replaces the time portion of the DateTime parameter with the given
+  time value, adjusting the signs as needed if the date is prior to 1900
+  (Date value less than zero)  }
+
+procedure ReplaceTime(var DateTime: TDateTime; const NewTime: TDateTime);
+
+{ ReplaceDate replaces the date portion of the DateTime parameter with the given
+  date value, adjusting as needed for negative dates }
+
+procedure ReplaceDate(var DateTime: TDateTime; const NewDate: TDateTime);
+
+{ IsLeapYear determines whether the given year is a leap year. }
+
+function IsLeapYear(Year: Word): Boolean;
+
+function DateToStr(const DateTime: TDateTime): string;
+function DateToStrEx(const DateTime: TDateTime;
+  const FormatSettings: TFormatSettings): string;
+
+{ TimeToStr converts the time part of the given TDateTime value to a string.
+  The conversion uses the format specified by the LongTimeFormat global
+  variable. }
+
+function TimeToStr(const DateTime: TDateTime): string;
+function TimeToStrEx(const DateTime: TDateTime;
+  const FormatSettings: TFormatSettings): string;
+
+
+function DateTimeToStr(const DateTime: TDateTime): string;
+function DateTimeToStrEx(const DateTime: TDateTime;
+  const FormatSettings: TFormatSettings): string;
+
+
+function StrToDate(const S: string): TDateTime;
+function StrToDateEx(const S: string;
+  const FormatSettings: TFormatSettings): TDateTime;
+
+function StrToDateDef(const S: string;
+  const Default: TDateTime): TDateTime;
+function StrToDateDefEx(const S: string; const Default: TDateTime;
+  const FormatSettings: TFormatSettings): TDateTime;
+
+function TryStrToDate(const S: string; out Value: TDateTime): Boolean;
+function TryStrToDateEx(const S: string; out Value: TDateTime;
+  const FormatSettings: TFormatSettings): Boolean;
+
+{ StrToTime converts the given string to a time value. The string must
+  consist of two or three numbers, separated by the character defined by
+  the TimeSeparator global variable, optionally followed by an AM or PM
+  indicator. The numbers represent hour, minute, and (optionally) second,
+  in that order. If the time is followed by AM or PM, it is assumed to be
+  in 12-hour clock format. If no AM or PM indicator is included, the time
+  is assumed to be in 24-hour clock format. If the given string does not
+  contain a valid time, an EConvertError exception is raised. }
+
+function StrToTime(const S: string): TDateTime;
+function StrToTimeEx(const S: string;
+  const FormatSettings: TFormatSettings): TDateTime;
+
+function StrToTimeDef(const S: string;
+  const Default: TDateTime): TDateTime;
+function StrToTimeDefEx(const S: string; const Default: TDateTime;
+  const FormatSettings: TFormatSettings): TDateTime;
+
+function TryStrToTime(const S: string; out Value: TDateTime): Boolean;
+function TryStrToTimeEx(const S: string; out Value: TDateTime;
+  const FormatSettings: TFormatSettings): Boolean;
+
+{ StrToDateTime converts the given string to a date and time value. The
+  string must contain a date optionally followed by a time. The date and
+  time parts of the string must follow the formats described for the
+  StrToDate and StrToTime functions. }
+
+function StrToDateTime(const S: string): TDateTime;
+function StrToDateTimeEx(const S: string;
+  const FormatSettings: TFormatSettings): TDateTime;
+
+function StrToDateTimeDef(const S: string;
+  const Default: TDateTime): TDateTime;
+function StrToDateTimeDefEx(const S: string; const Default: TDateTime;
+  const FormatSettings: TFormatSettings): TDateTime;
+
+function TryStrToDateTime(const S: string;
+  out Value: TDateTime): Boolean;
+function TryStrToDateTimeEx(const S: string; out Value: TDateTime;
+  const FormatSettings: TFormatSettings): Boolean;
+
+function FormatDateTime(const Format: string;
+  DateTime: TDateTime): string;
+function FormatDateTimeEx(const Format: string; DateTime: TDateTime;
+  const FormatSettings: TFormatSettings): string;
+
+{ DateTimeToString converts the date and time value given by DateTime using
+  the format string given by Format into the string variable given by Result.
+  For further details, see the description of the FormatDateTime function. }
+
+procedure DateTimeToString(var Result: string; const Format: string;
+  DateTime: TDateTime);
+procedure DateTimeToStringEx(var Result: string; const Format: string;
+  DateTime: TDateTime; const FormatSettings: TFormatSettings);
+
+{ FloatToDateTime will range validate a value to make sure it falls
+  within the acceptable date range }
+
+const
+  MinDateTime: TDateTime = -657434.0;      { 01/01/0100 12:00:00.000 AM }
+  MaxDateTime: TDateTime =  2958465.99999; { 12/31/9999 11:59:59.999 PM }
+
+function FloatToDateTime(const Value: Extended): TDateTime;
+function TryFloatToDateTime(const Value: Extended; out AResult: TDateTime): Boolean;
+
+{ System error messages }
+
+function SysErrorMessage(ErrorCode: Integer): string;
+
+{ Initialization file support }
+
+function GetLocaleStr(Locale, LocaleType: Integer; const Default: string): string;
+function GetLocaleChar(Locale, LocaleType: Integer; Default: Char): Char;
+
+{ GetFormatSettings resets all locale-specific variables (date, time, number,
+  currency formats, system locale) to the values provided by the operating system. }
+
+procedure GetFormatSettings;
+
+{ GetLocaleFormatSettings loads locale-specific variables (date, time, number,
+  currency formats) with values provided by the operating system for the
+  specified locale (LCID). The values are stored in the FormatSettings record. }
+
+{$IFDEF MSWINDOWS}
+procedure GetLocaleFormatSettings(LCID: Integer;
+  var FormatSettings: TFormatSettings);
+{$ENDIF}
+
+{ Exception handling routines }
+
+{$IFDEF LINUX}
+{   InquireSignal is used to determine the state of an OS signal handler.
+    Pass it one of the RTL_SIG* constants, and it will return a TSignalState
+    which will tell you if the signal has been hooked, not hooked, or overriden
+    by some other module.  You can use this function to determine if some other
+    module has hijacked your signal handlers, should you wish to reinstall your
+    own. This is a risky proposition under Linux, and is only recommended as a
+    last resort.  Do not pass RTL_SIGDEFAULT to this function.
+}
+function InquireSignal(RtlSigNum: Integer): TSignalState;
+
+{ AbandonSignalHandler tells the RTL to leave a signal handler
+    in place, even if we believe that we hooked it at startup time.
+
+    Once you have called AbandonSignalHandler with a specific signal number,
+    neither UnhookSignal nor the RTL will restore any previous signal handler
+    under any condition.
+}
+procedure AbandonSignalHandler(RtlSigNum: Integer);
+
+{ HookSignal is used to hook individual signals, or an RTL-defined default
+    set of signals.  It does not test whether a signal has already been
+    hooked, so it should be used in conjunction with InquireSignal.  It is
+    exposed to enable users to hook signals in standalone libraries, or in the
+    event that an external module hijacks the RTL installed signal handlers.
+    Pass RTL_SIGDEFAULT if you want to hook all the signals that the RTL
+    normally hooks at startup time.
+}
+procedure HookSignal(RtlSigNum: Integer);
+
+{ UnhookSignal is used to remove signal handlers installed by HookSignal.
+    It can remove individual signal handlers, or the RTL-defined default set
+    of signals.  If OnlyIfHooked is True, then we will only unhook the signal
+    if the signal handler has been hooked, and has not since been overriden by
+    some foreign handler.
+}
+procedure UnhookSignal(RtlSigNum: Integer; OnlyIfHooked: Boolean = True);
+
+{ HookOSExceptions is used internally by thread support.  DON'T call this
+  function yourself. }
+procedure HookOSExceptions;
+
+{ MapSignal is used internally as well.  It maps a signal and associated
+  context to an internal value that represents the type of Exception
+  class to raise. }
+function MapSignal(SigNum: Integer; Context: PSigContext): LongWord;
+
+{ SignalConverter is used internally to properly reinit the FPU and properly
+  raise an external OS exception object.  DON'T call this function yourself. }
+procedure SignalConverter(ExceptionEIP: LongWord; FaultAddr: LongWord; ErrorCode: LongWord);
+
+{
+    See the comment at the threadvar declarations for these below.  The access
+    to these has been implemented through getter/setter functions because you
+    cannot use threadvars across packages.
+}
+procedure SetSafeCallExceptionMsg(const Msg: String);
+procedure SetSafeCallExceptionAddr(Addr: Pointer);
+function GetSafeCallExceptionMsg: String;
+function GetSafeCallExceptionAddr: Pointer;
+
+{ HookOSExceptionsProc is used internally and cannot be used in a conventional
+  manner.  DON'T ever set this variable. }
+var
+  HookOSExceptionsProc: procedure = nil;
+
+{ LoadLibrary / FreeLibrary are defined here only for convenience.  On Linux,
+  they map directly to dlopen / dlclose.  Note that module loading semantics
+  on Linux are not identical to Windows.  }
+
+function LoadLibrary(ModuleName: PChar): HMODULE;
+
+function FreeLibrary(Module: HMODULE): LongBool;
+
+{ GetProcAddress does what it implies.  It performs the same function as the like
+  named function under Windows.  dlsym does not quite have the same sematics as
+  GetProcAddress as it will return the address of a symbol in another module if
+  it was not found in the given HMODULE.  This function will verify that the 'Proc'
+  is actually found within the 'Module', and if not returns nil }
+function GetProcAddress(Module: HMODULE; Proc: PChar): Pointer;
+
+{ Given a module name, this function will return the module handle.  There is no
+  direct equivalent in Linux so this function provides that capability.  Also
+  note, this function is specific to glibc. }
+function GetModuleHandle(ModuleName: PChar): HMODULE;
+
+{ This function works just like GetModuleHandle, except it will look for a module
+  that matches the given base package name.  For example, given the base package
+  name 'package', the actual module name is, by default, 'bplpackage.so'.  This
+  function will search for the string 'package' within the module name. }
+function GetPackageModuleHandle(PackageName: PChar): HMODULE;
+
+{$ENDIF}
+
+{ In Linux, the parameter to sleep() is in whole seconds.  In Windows, the
+  parameter is in milliseconds.  To ease headaches, we implement a version
+  of sleep here for Linux that takes milliseconds and calls a Linux system
+  function with sub-second resolution.  This maps directly to the Windows
+  API on Windows. }
+
+procedure Sleep(milliseconds: Cardinal);{$IFDEF MSWINDOWS} stdcall; {$ENDIF}
+{$IFDEF MSWINDOWS}
+(*$EXTERNALSYM Sleep*)
+{$ENDIF}
+
+function GetModuleName(Module: HMODULE): string;
+
+function ExceptionErrorMessage(ExceptObject: TObject; ExceptAddr: Pointer;
+  Buffer: PChar; Size: Integer): Integer;
+
+procedure ShowException(ExceptObject: TObject; ExceptAddr: Pointer);
+
+procedure Abort;
+
+procedure OutOfMemoryError;
+
+procedure Beep;
+
+{ MBCS functions }
+
+{ LeadBytes is a char set that indicates which char values are lead bytes
+  in multibyte character sets (Japanese, Chinese, etc).
+  This set is always empty for western locales. }
+
+function ByteType(const S: string; Index: Integer): TMbcsByteType;
+
+{ StrByteType works the same as ByteType, but on null-terminated PChar strings }
+
+function StrByteType(Str: PChar; Index: Cardinal): TMbcsByteType;
+
+{ ByteToCharLen returns the character length of a MBCS string, scanning the
+  string for up to MaxLen bytes.  In multibyte character sets, the number of
+  characters in a string may be less than the number of bytes.  }
+
+function ByteToCharLen(const S: string; MaxLen: Integer): Integer;
+
+{ CharToByteLen returns the byte length of a MBCS string, scanning the string
+  for up to MaxLen characters. }
+
+function CharToByteLen(const S: string; MaxLen: Integer): Integer;
+
+{ ByteToCharIndex returns the 1-based character index of the Index'th byte in
+  a MBCS string.  Returns zero if Index is out of range:
+  (Index <= 0) or (Index > Length(S)) }
+
+function ByteToCharIndex(const S: string; Index: Integer): Integer;
+
+{ CharToByteIndex returns the 1-based byte index of the Index'th character
+  in a MBCS string.  Returns zero if Index or Result are out of range:
+  (Index <= 0) or (Index > Length(S)) or (Result would be > Length(S)) }
+
+function CharToByteIndex(const S: string; Index: Integer): Integer;
+
+{ StrCharLength returns the number of bytes required by the first character
+  in Str.  In Windows, multibyte characters can be up to two bytes in length.
+  In Linux, multibyte characters can be up to six bytes in length (UTF-8). }
+
+function StrCharLength(const Str: PChar): Integer;
+
+{ StrNextChar returns a pointer to the first byte of the character following
+  the character pointed to by Str.  }
+
+function StrNextChar(const Str: PChar): PChar;
+
+{ CharLength returns the number of bytes required by the character starting
+  at bytes S[Index].  }
+
+function CharLength(const S: String; Index: Integer): Integer;
+
+{ NextCharIndex returns the byte index of the first byte of the character
+  following the character starting at S[Index].  }
+
+function NextCharIndex(const S: String; Index: Integer): Integer;
+
+{ IsPathDelimiter returns True if the character at byte S[Index]
+  is a PathDelimiter ('\' or '/'), and it is not a MBCS lead or trail byte. }
+
+function IsPathDelimiter(const S: string; Index: Integer): Boolean;
+
+{ IsDelimiter returns True if the character at byte S[Index] matches any
+  character in the Delimiters string, and the character is not a MBCS lead or
+  trail byte.  S may contain multibyte characters; Delimiters must contain
+  only single byte characters. }
+
+function IsDelimiter(const Delimiters, S: string; Index: Integer): Boolean;
+
+{ IncludeTrailingPathDelimiter returns the path with a PathDelimiter
+  ('/' or '\') at the end.  This function is MBCS enabled. }
+
+function IncludeTrailingPathDelimiter(const S: string): string;
+
+{ IncludeTrailingBackslash is the old name for IncludeTrailingPathDelimiter. }
+
+function IncludeTrailingBackslash(const S: string): string;
+
+{ ExcludeTrailingPathDelimiter returns the path without a PathDelimiter
+  ('\' or '/') at the end.  This function is MBCS enabled. }
+
+function ExcludeTrailingPathDelimiter(const S: string): string;
+
+{ ExcludeTrailingBackslash is the old name for ExcludeTrailingPathDelimiter. }
+
+function ExcludeTrailingBackslash(const S: string): string;
+
+{ LastDelimiter returns the byte index in S of the rightmost whole
+  character that matches any character in Delimiters (except null (#0)).
+  S may contain multibyte characters; Delimiters must contain only single
+  byte non-null characters.
+  Example: LastDelimiter('\.:', 'c:\filename.ext') returns 12. }
+
+function LastDelimiter(const Delimiters, S: string): Integer;
+
+{ AnsiCompareFileName supports DOS file name comparison idiosyncracies
+  in Far East locales (Zenkaku) on Windows.
+  In non-MBCS locales on Windows, AnsiCompareFileName is identical to
+  AnsiCompareText (case insensitive).
+  On Linux, AnsiCompareFileName is identical to AnsiCompareStr (case sensitive).
+  For general purpose file name comparisions, you should use this function
+  instead of AnsiCompareText. }
+
+function AnsiCompareFileName(const S1, S2: string): Integer;
+
+function SameFileName(const S1, S2: string): Boolean;
+
+{ AnsiLowerCaseFileName supports lowercase conversion idiosyncracies of
+  DOS file names in Far East locales (Zenkaku).  In non-MBCS locales,
+  AnsiLowerCaseFileName is identical to AnsiLowerCase. }
+
+function AnsiLowerCaseFileName(const S: string): string;
+
+{ AnsiUpperCaseFileName supports uppercase conversion idiosyncracies of
+  DOS file names in Far East locales (Zenkaku).  In non-MBCS locales,
+  AnsiUpperCaseFileName is identical to AnsiUpperCase. }
+
+function AnsiUpperCaseFileName(const S: string): string;
+
+{ AnsiPos:  Same as Pos but supports MBCS strings }
+
+function AnsiPos(const Substr, S: string): Integer;
+
+{ AnsiStrPos: Same as StrPos but supports MBCS strings }
+
+function AnsiStrPos(Str, SubStr: PChar): PChar;
+
+{ AnsiStrRScan: Same as StrRScan but supports MBCS strings }
+
+function AnsiStrRScan(Str: PChar; char: Char): PChar;
+
+{ AnsiStrScan: Same as StrScan but supports MBCS strings }
+
+function AnsiStrScan(Str: PChar; char: Char): PChar;
+
+{ StringReplace replaces occurances of <oldpattern> with <newpattern> in a
+  given string.  Assumes the string may contain Multibyte characters }
+
+type
+  TReplaceFlags = set of (rfReplaceAll, rfIgnoreCase);
+
+function StringReplace(const S, OldPattern, NewPattern: string;
+  Flags: TReplaceFlags): string;
+
+{ WrapText will scan a string for BreakChars and insert the BreakStr at the
+  last BreakChar position before MaxCol.  Will not insert a break into an
+  embedded quoted string (both ''' and '"' supported) }
+
+function WrapText(const Line, BreakStr: string; const BreakChars: TSysCharSet;
+  MaxCol: Integer): string;
+function WrapText(const Line: string; MaxCol: Integer = 45): string;
+
+{ FindCmdLineSwitch determines whether the string in the Switch parameter
+  was passed as a command line argument to the application.  SwitchChars
+  identifies valid argument-delimiter characters (i.e., "-" and "/" are
+  common delimiters). The IgnoreCase paramter controls whether a
+  case-sensistive or case-insensitive search is performed. }
+
+const
+  SwitchChars = ['/','-'];
+
+function FindCmdLineSwitch(const Switch: string; const Chars: TSysCharSet;
+  IgnoreCase: Boolean): Boolean;
+
+{ These versions of FindCmdLineSwitch are convenient for writing portable
+  code.  The characters that are valid to indicate command line switches vary
+  on different platforms.  For example, '/' cannot be used as a switch char
+  on Linux because '/' is the path delimiter. }
+
+{ This version uses SwitchChars defined above, and IgnoreCase False. }
+function FindCmdLineSwitch(const Switch: string): Boolean;
+
+{ This version uses SwitchChars defined above. }
+function FindCmdLineSwitch(const Switch: string; IgnoreCase: Boolean): Boolean;
+
+{ Interface support routines }
+function Supports(const Instance: IInterface; const IID: TGUID): Boolean;
+function Supports(const Instance: TObject; const IID: TGUID): Boolean;
+function Supports(const AClass: TClass; const IID: TGUID): Boolean;
+
+function CreateGUID(out Guid: TGUID): HResult;
+{$IFDEF MSWINDOWS}
+  stdcall;
+{$ENDIF}
+function StringToGUID(const S: string): TGUID;
+function GUIDToString(const GUID: TGUID): string;
+function IsEqualGUID(const guid1, guid2: TGUID): Boolean;
+{$IFDEF MSWINDOWS}
+  stdcall;  {$EXTERNALSYM IsEqualGUID}
+{$ENDIF}
+
+{ Package support routines }
+
+{ Package Info flags }
+
+const
+  pfNeverBuild = $00000001;
+  pfDesignOnly = $00000002;
+  pfRunOnly = $00000004;
+  pfIgnoreDupUnits = $00000008;
+  pfModuleTypeMask = $C0000000;
+  pfExeModule = $00000000;
+  pfPackageModule = $40000000;
+  pfProducerMask = $0C000000;
+  pfV3Produced =  $00000000;
+  pfProducerUndefined = $04000000;
+  pfBCB4Produced = $08000000;
+  pfDelphi4Produced = $0C000000;
+  pfLibraryModule = $80000000;
+
+{ Unit info flags }
+
+{$IFDEF LINUX}
+var
+  PkgLoadingMode: Integer = RTLD_LAZY;
+{$ENDIF}
+
+{ Procedure type of the callback given to GetPackageInfo.  Name is the actual
+  name of the package element.  If IsUnit is True then Name is the name of
+  a contained unit; a required package if False.  Param is the value passed
+  to GetPackageInfo }
+
+type
+  TNameType = (ntContainsUnit, ntRequiresPackage, ntDcpBpiName);
+
+  TPackageInfoProc = procedure (const Name: string; NameType: TNameType; Flags: Byte; Param: Pointer);
+
+{ LoadPackage loads a given package DLL, checks for duplicate units and
+  calls the initialization blocks of all the contained units }
+
+function LoadPackage(const Name: string): HMODULE;
+
+{ UnloadPackage does the opposite of LoadPackage by calling the finalization
+  blocks of all contained units, then unloading the package DLL }
+
+procedure UnloadPackage(Module: HMODULE);
+
+{ GetPackageInfo accesses the given package's info table and enumerates
+  all the contained units and required packages }
+
+procedure GetPackageInfo(Module: HMODULE; Param: Pointer; var Flags: Integer;
+  InfoProc: TPackageInfoProc);
+
+{ GetPackageDescription loads the description resource from the package
+  library. If the description resource does not exist,
+  an empty string is returned. }
+function GetPackageDescription(ModuleName: PChar): string;
+
+{ InitializePackage validates and initializes the given package DLL }
+
+procedure InitializePackage(Module: HMODULE);
+
+{ FinalizePackage finalizes the given package DLL }
+
+procedure FinalizePackage(Module: HMODULE);
+
+{ RaiseLastOSError calls GetLastError to retrieve the code for
+  the last occuring error in a call to an OS or system library function.
+  If GetLastError returns an error code,  RaiseLastOSError raises
+  an EOSError exception with the error code and a system-provided
+  message associated with with error. }
+
+procedure RaiseLastOSError;
+
+{$IFDEF MSWINDOWS}
+procedure RaiseLastWin32Error;  // use RaiseLastOSError
+
+{ Win32Check is used to check the return value of a Win32 API function     }
+{ which returns a BOOL to indicate success.  If the Win32 API function     }
+{ returns False (indicating failure), Win32Check calls RaiseLastOSError }
+{ to raise an exception.  If the Win32 API function returns True,          }
+{ Win32Check returns True. }
+
+function Win32Check(RetVal: BOOL): BOOL;
+{$ENDIF}
+
+{ Termination procedure support }
+
+type
+  TTerminateProc = function: Boolean;
+
+{ Call AddTerminateProc to add a terminate procedure to the system list of }
+{ termination procedures.  Delphi will call all of the function in the     }
+{ termination procedure list before an application terminates.  The user-  }
+{ defined TermProc function should return True if the application can      }
+{ safely terminate or False if the application cannot safely terminate.    }
+{ If one of the functions in the termination procedure list returns False, }
+{ the application will not terminate. }
+
+procedure AddTerminateProc(TermProc: TTerminateProc);
+
+{ CallTerminateProcs is called by VCL when an application is about to }
+{ terminate.  It returns True only if all of the functions in the     }
+{ system's terminate procedure list return True.  This function is    }
+{ intended only to be called by Delphi, and it should not be called   }
+{ directly. }
+
+function CallTerminateProcs: Boolean;
+
+function GDAL: LongWord;
+procedure RCS;
+procedure RPR;
+
+
+{ HexDisplayPrefix contains the prefix to display on hexadecimal
+  values - '$' for Pascal syntax, '0x' for C++ syntax.  This is
+  for display only - this does not affect the string-to-integer
+  conversion routines. }
+var
+  HexDisplayPrefix: string = '$';
+
+{$IFDEF MSWINDOWS}
+{ The GetDiskFreeSpace Win32 API does not support partitions larger than 2GB
+  under Win95.  A new Win32 function, GetDiskFreeSpaceEx, supports partitions
+  larger than 2GB but only exists on Win NT 4.0 and Win95 OSR2.
+  The GetDiskFreeSpaceEx function pointer variable below will be initialized
+  at startup to point to either the actual OS API function if it exists on
+  the system, or to an internal Delphi function if it does not.  When running
+  on Win95 pre-OSR2, the output of this function will still be limited to
+  the 2GB range reported by Win95, but at least you don't have to worry
+  about which API function to call in code you write.  }
+
+
+function SafeLoadLibrary(const FileName: string;
+  ErrorMode: UINT = SEM_NOOPENFILEERRORBOX): HMODULE;
+
+{$ENDIF}
+
+{$IFDEF LINUX}
+{ SafeLoadLibrary calls LoadLibrary preserves the current FPU control
+  word (precision, exception masks) across the LoadLibrary call (in
+  case the shared object you're loading hammers the FPU control
+  word in its initialization, as many MS DLLs do) }
+
+function SafeLoadLibrary(const FileName: string;
+  Dummy: LongWord = 0): HMODULE;
+{$ENDIF}
+
+{ Thread synchronization }
+
+{ IReadWriteSync is an abstract interface for general read/write synchronization.
+  Some implementations may allow simultaneous readers, but writers always have
+  exclusive locks.
+
+  Worst case is that this class behaves identical to a TRTLCriticalSection -
+  that is, read and write locks block all other threads. }
+
+type
+  IReadWriteSync = interface
+    ['{7B108C52-1D8F-4CDB-9CDF-57E071193D3F}']
+    procedure BeginRead;
+    procedure EndRead;
+    function BeginWrite: Boolean;
+    procedure EndWrite;
+  end;
+
+  TSimpleRWSync = class(TInterfacedObject, IReadWriteSync)
+  private
+    FLock: TRTLCriticalSection;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure BeginRead;
+    procedure EndRead;
+    function BeginWrite: Boolean;
+    procedure EndWrite;
+  end;
+
+{ TThreadLocalCounter
+
+  This class implements a lightweight non-blocking thread local storage
+  mechanism specifically built for tracking per-thread recursion counts
+  in TMultiReadExclusiveWriteSynchronizer.  This class is intended for
+  Delphi RTL internal use only.  In the future it may be generalized
+  and "hardened" for general application use, but until then leave it alone.
+
+  Rules of Use:
+  The tls object must be opened to gain access to the thread-specific data
+  structure.  If a threadinfo block does not exist for the current thread,
+  Open will allocate one.  Every call to Open must be matched with a call
+  to Close.  The pointer returned by Open is invalid after the matching call
+  to Close (or Delete).
+
+  The thread info structure is unique to each thread.  Once you have it, it's
+  yours.  You don't need to guard against concurrent access to the thread
+  data by multiple threads - your thread is the only thread that will ever
+  have access to the structure that Open returns.  The thread info structure
+  is allocated and owned by the tls object.  If you put allocated pointers
+  in the thread info make sure you free them before you delete the threadinfo
+  node.
+
+  When thread data is no longer needed, call the Delete method on the pointer.
+  This must be done between calls to Open and Close.  You should not use the
+  thread data after calling Delete.
+
+  Important:  Do not keep the tls object open for long periods of time.
+  In particular, be careful not to wait on a thread synchronization event or
+  critical section while you have the tls object open.  It's much better to
+  open and close the tls object before and after the blocking event than to
+  leave the tls object open while waiting.
+
+  Implementation Notes:
+  The main purpose of this storage class is to provide thread-local storage
+  without using limited / problematic OS tls slots and without requiring
+  expensive blocking thread synchronization.  This class performs no
+  blocking waits or spin loops!  (except for memory allocation)
+
+  Thread info is kept in linked lists to facilitate non-blocking threading
+  techniques.  A hash table indexed by a hash of the current thread ID
+  reduces linear search times.
+
+  When a node is deleted, its thread ID is stripped and its Active field is
+  set to zero, meaning it is available to be recycled for other threads.
+  Nodes are never removed from the live list or freed while the class is in
+  use.  All nodes are freed when the class is destroyed.
+
+  Nodes are only inserted at the front of the list (each list in the hash table).
+
+  The linked list management relies heavily on InterlockedExchange to perform
+  atomic node pointer replacements.  There are brief windows of time where
+  the linked list may be circular while a two-step insertion takes place.
+  During that brief window, other threads traversing the lists may see
+  the same node more than once more than once. (pun!) This is fine for what this
+  implementation needs.  Don't do anything silly like try to count the
+  nodes during a traversal.
+}
+
+type
+  TMultiReadExclusiveWriteSynchronizer = class(TInterfacedObject, IReadWriteSync)
+  private
+    FSentinel: Integer;
+    FReadSignal: THandle;
+    FWriteSignal: THandle;
+    FWaitRecycle: Cardinal;
+    FWriteRecursionCount: Cardinal;
+    tls: TThreadLocalCounter;
+    FWriterID: Cardinal;
+    FRevisionLevel: Cardinal;
+    procedure BlockReaders;
+    procedure UnblockReaders;
+    procedure UnblockOneWriter;
+    procedure WaitForReadSignal;
+    procedure WaitForWriteSignal;
+{$IFDEF DEBUG_MREWS}
+    procedure Debug(const Msg: string);
+{$ENDIF}
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure BeginRead;
+    procedure EndRead;
+    function BeginWrite: Boolean;
+    procedure EndWrite;
+    property RevisionLevel: Cardinal read FRevisionLevel;
+  end;
+{$ELSE}
+type
+  TMultiReadExclusiveWriteSynchronizer = TSimpleRWSync;
+{$ENDIF}
+
+type
+  TMREWSync = TMultiReadExclusiveWriteSynchronizer;  // short form
+
+function GetEnvironmentVariable(const Name: string): string;
+
+{$IFDEF LINUX}
+function InterlockedIncrement(var I: Integer): Integer;
+function InterlockedDecrement(var I: Integer): Integer;
+function InterlockedExchange(var A: Integer; B: Integer): Integer;
+function InterlockedExchangeAdd(var A: Integer; B: Integer): Integer;
+{$ENDIF}
+
+implementation
+
+end.
+
+

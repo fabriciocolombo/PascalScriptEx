@@ -4,7 +4,7 @@ const
         ALTURA_BARRA_TITULO 	= 20;
         ESPACAMENTO 		= 10;
         TAMANHO_BORDA 		= 4;
-        AMOSTRAGEM_ARQUIVO 	= 'Resources\Plantio_13_2_20137_28_57.txt';
+        AMOSTRAGEM_ARQUIVO 	= '..\Resources\Plantio_13_2_20137_28_57.txt';
   
 var
 	t 			: TForm;
@@ -19,28 +19,18 @@ var
 
 procedure ExibirListaArquivos(Sender: TObject);
 var
-   i : Integer;
    str : string;
    strArquivo : string;
-   stlLista   : TStrings;
 begin
      str := ExtractFilePath(AMOSTRAGEM_ARQUIVO);
      strArquivo := StringReplace(AMOSTRAGEM_ARQUIVO, str, '---> ', [rfReplaceAll]);
 
      ShowMessageFmt('Diretorio selecionado: %s', [str]);
      
-     stlLista := ListarArquivos(str, '*.*');
-     try
-       files.Items.Clear;
-       for i := 0 to stlLista.Count - 1 do
-       begin
-          files.Items.Add(stlLista[i]);
-       end;
-     
-       ShowMessage('Numero de arquivos: ' + IntToStr(stlLista.Count));
-     finally
-       stlLista.Free;
-     end;
+     files.Items.Clear;
+     ListFiles(str, '*.*', files.Items);
+
+     ShowMessage('Numero de arquivos: ' + IntToStr(files.Items.Count));
 end;
 
 procedure SepararDados(Sender: TObject);
@@ -175,9 +165,9 @@ begin
 end;
 
 begin
-	if messagedlg('Continuar a aplicaÃ§Ã£o?', mtConfirmation, [mbYes, mbNo], 0) = mrNo then
+	if messagedlg('Continuar a aplicação?', mtConfirmation, [mbYes, mbNo], 0) = mrNo then
 	begin
-	   ShowMessage('AplicaÃ§Ã£o encerrada.');
+	   ShowMessage('Aplicação encerrada.');
 	   Exit;
 	end;   
 	

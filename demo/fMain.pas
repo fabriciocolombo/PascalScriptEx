@@ -23,13 +23,20 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, StdCtrls, uPSComponent, uPSCompiler, Menus, uPSRuntime, Variants, uPSComponent_StdCtrls,
-  uPSComponent_Controls, uPSComponent_Forms, uPSComponent_DB, uPSComponent_COM, uPSComponent_Default,
-  SynEditHighlighter, SynHighlighterPas, SynEdit;
+
+  {SynEdit}
+  SynEditPlugins, SynMacroRecorder, SynCompletionProposal, SynEditHighlighter,
+  SynHighlighterPas, SynEdit,
+  {PascalScript}
+  uPSComponent_Default, uPSRuntime, uPSDisassembly, uPSUtils, uPSComponent,
+  uPSDebugger, uPSCompiler, uPSComponent_StdCtrls, uPSComponent_Controls,
+  uPSComponent_Forms, uPSComponent_DB, uPSComponent_COM,
+
+  ExtCtrls, StdCtrls, Menus;
 
 type
-  TForm1 = class(TForm)
-    Memo2: TMemo;
+  TFrm_Main = class(TForm)
+    Messages: TMemo;
     Splitter1: TSplitter;
     MainMenu1: TMainMenu;
     Program1: TMenuItem;
@@ -37,46 +44,40 @@ type
     PSScript: TPSScript;
     mnpN1: TMenuItem;
     mnpSair1: TMenuItem;
-    psi_std_1: TPSImport_StdCtrls;
-    psmprt_cls1: TPSImport_Classes;
-    psmprt_dtls1: TPSImport_DateUtils;
-    psmprt_cntrls1: TPSImport_Controls;
-    psdlplgn_DLL: TPSDllPlugin;
-    Memo1: TSynEdit;
-    synpsyn1: TSynPasSyn;
+    Editor: TSynEdit;
+    SynPasSyn: TSynPasSyn;
+    SynCompletionProposal: TSynCompletionProposal;
+    SynAutoComplete: TSynAutoComplete;
+    SynMacroRecorder: TSynMacroRecorder;
+    PSScriptDebugger: TPSScriptDebugger;
+    PSImport_Classes: TPSImport_Classes;
+    PSImport_DateUtils: TPSImport_DateUtils;
+    PSImport_ComObj: TPSImport_ComObj;
+    PSImport_DB: TPSImport_DB;
+    PSImport_Forms: TPSImport_Forms;
+    PSImport_Controls: TPSImport_Controls;
+    PSImport_StdCtrls: TPSImport_StdCtrls;
+    PSCustomPlugin: TPSCustomPlugin;
+    PSDllPlugin: TPSDllPlugin;
     procedure PSScriptCompile(Sender: TPSScript);
     procedure Compile1Click(Sender: TObject);
     procedure PSScriptExecute(Sender: TPSScript);
-    procedure PSScriptCompImport(Sender: TObject; x: TPSPascalCompiler);
     procedure PSScriptExecImport(Sender: TObject; se: TPSExec; x: TPSRuntimeClassImporter);
     procedure mnpSair1Click(Sender: TObject);
   private
     { Private declarations }
   public
-    { Public declarations }
+    constructor Create(AOwner: TComponent); override;
   end;
 
 var
-  Form1        : TForm1;
+  Frm_Main: TFrm_Main;
 
 implementation
-uses
-  uPSR_std,
-  uPSC_std,
-  uPSR_stdctrls,
-  uPSC_stdctrls,
-  uPSR_forms,
-  uPSC_forms,
-  uPSC_graphics,
-  uPSC_controls,
-  uPSC_classes,
-  uPSR_graphics,
-  uPSR_controls,
-  uPSR_classes,
-  uPSC_comobj,
-  uPSR_comobj;
 
 {$R *.DFM}
+
+uses RegisterPlugins, PSResources;
 
 function ImportTest(S1: string; s2: Longint; s3: Byte; s4: word; var s5: string): string;
 begin
@@ -86,7 +87,7 @@ end;
 
 procedure MyWriteln(const s: string);
 begin
-  Form1.Memo2.Lines.Add(s);
+  Frm_Main.Messages.Lines.Add(s);
 end;
 
 function MyReadln(const question: string): string;
@@ -120,22 +121,32 @@ begin
   raise E;
 end;
 
-procedure TForm1.mnpSair1Click(Sender: TObject);
+constructor TFrm_Main.Create(AOwner: TComponent);
+begin
+  inherited;
+
+  RegisterPSPlugins(PSScript);
+  RegisterPSPlugins(PSScriptDebugger);
+
+
+end;
+
+procedure TFrm_Main.mnpSair1Click(Sender: TObject);
 begin
    Close;
 end;
 
-procedure TForm1.PSScriptCompile(Sender: TPSScript);
+procedure TFrm_Main.PSScriptCompile(Sender: TPSScript);
 begin
 //
 // Para funcoes mais complicadas (dificeis de registrar),
 // deve-se montar o script no Delphi e registrar sua chamada no PascalScript
 //
-   Sender.AddFunction(@MyWriteln,         'procedure MyWriteln(s: string);');
-   Sender.AddFunction(@MyReadln,          'function MyReadln(question: string): string;');
-   Sender.AddFunction(@ImportTest,        'function ImportTest(S1: string; s2: Longint; s3: Byte; s4: word; var s5: string): string;');
-   Sender.AddFunction(@MyListarArquivos,  'function ListarArquivos(strDiretorio: string; strFiltro: string): TStrings;');
-   Sender.AddFunction(@MyRaiseException, 'procedure RaiseException(E: Exception);');
+//   Sender.AddFunction(@MyWriteln,         'procedure MyWriteln(s: string);');
+//   Sender.AddFunction(@MyReadln,          'function MyReadln(question: string): string;');
+//   Sender.AddFunction(@ImportTest,        'function ImportTest(S1: string; s2: Longint; s3: Byte; s4: word; var s5: string): string;');
+//   Sender.AddFunction(@MyListarArquivos,  'function ListarArquivos(strDiretorio: string; strFiltro: string): TStrings;');
+//   Sender.AddFunction(@MyRaiseException, 'procedure RaiseException(E: Exception);');
 
 //
 // FIM
@@ -145,6 +156,7 @@ begin
 // Para manipulacao dos FORMS, VARIAVEIS e COMPONENTES da aplicacao Delphi,
 //    deve-se declarar estes componentes como variaveis dentro do PascalScript
 // Tambem deve-se declarar estas variaveis na secao "EXECUTE" do ScriptPascal
+(*
    Sender.AddRegisteredVariable('vars',         'Variant'      );
    Sender.AddRegisteredVariable('Application',  'TApplication' );
    Sender.AddRegisteredVariable('Self',         'TForm'        );
@@ -152,6 +164,7 @@ begin
    Sender.AddRegisteredVariable('Memo2',        'TMemo'        );
    Sender.AddRegisteredVariable('AName',        'string'       );
    Sender.AddRegisteredVariable('TTime',        'TDateTime'    );
+   *)
 //
 // FIM
 //
@@ -168,35 +181,27 @@ begin
 //
 end;
 
-procedure TForm1.PSScriptExecute(Sender: TPSScript);
+procedure TFrm_Main.PSScriptExecute(Sender: TPSScript);
 begin
+
 //
 // Declaracao das variaveis preparadas na secao "COMPILE" do PascalScript
 //
+  (*
    PSScript.SetVarToInstance('APPLICATION', Application);
    PSScript.SetVarToInstance('SELF', Self);
    PSScript.SetVarToInstance('MEMO1', Memo1);
    PSScript.SetVarToInstance('MEMO2', Memo2);
-//
-// FIM
-//
+   *)
 
 //   PPSVariantVariant(PSScript.GetVariable('VARS'))^.Data := VarArrayCreate([0, 1], varShortInt);
 //   PSScript.SetPointerToData('pnlObs', @pnl1, PSScript.FindNamedType('TCustomControl'));
 //   PSScript.SetVarToInstance('pnlObs', pnl1);
 end;
 
-procedure TForm1.PSScriptCompImport(Sender: TObject; x: TPSPascalCompiler);
+(*
+procedure TFrm_Main.PSScriptCompImport(Sender: TObject; x: TPSPascalCompiler);
 begin
-   SIRegister_Std(x);
-   SIRegister_Classes(x, true);
-   SIRegister_Graphics(x, true);
-   SIRegister_Controls(x);
-   SIRegister_stdctrls(x);
-   SIRegister_Forms(x);
-   SIRegister_ComObj(x);
-
-
 // As intrucoes com "ADDDELPHIFUNCTION" devem ser declaradas na secao EXECIMPORT do componente PascalScript
 // As funcoes com tipos especiais de variaveis, devem ser inseridas com o "ADDTYPES" do PascalScript
 //
@@ -226,24 +231,16 @@ begin
 //
 end;
 
+*)
+
 procedure ExceptionMessageR(Self: Exception; var S: String);
 begin
   S := Self.Message;
 end;
 
-procedure TForm1.PSScriptExecImport(Sender: TObject; se: TPSExec; x: TPSRuntimeClassImporter);
+procedure TFrm_Main.PSScriptExecImport(Sender: TObject; se: TPSExec; x: TPSRuntimeClassImporter);
 begin
-  RIRegister_Std(x);
-  RIRegister_Classes(x, True);
-  RIRegister_Graphics(x, True);
-  RIRegister_Controls(x);
-  RIRegister_stdctrls(x);
-  RIRegister_Forms(x);
-//  RIRegister_ComObj(exec);
-
-//
-// Registro das funcoes declaradas na secao COMPIMPORT
-//
+(*
    PSScript.Exec.RegisterDelphiFunction(@ExtractFilePath,   'EXTRACTFILEPATH',   cdRegister);
    PSScript.Exec.RegisterDelphiFunction(@ExtractFileName,   'EXTRACTFILENAME',   cdRegister);
    PSScript.Exec.RegisterDelphiFunction(@StrToTime,         'STRTOTIME',         cdRegister);
@@ -252,18 +249,17 @@ begin
    PSScript.Exec.RegisterDelphiFunction(@ShowMessageFmt, 'ShowMessageFmt', cdRegister);
    PSScript.Exec.RegisterDelphiFunction(@MessageDlg,        'MESSAGEDLG',        cdRegister);
    PSScript.Exec.RegisterDelphiFunction(@SameText,        'SameText',        cdRegister);
-//
-// FIM
-//
 
    with x.Add(Exception) do
    begin
       RegisterConstructor(@Exception.Create, 'Create');
       RegisterPropertyHelper(@ExceptionMessageR, nil, 'Message');
    end;
+   *)
 end;
 
-procedure TForm1.Compile1Click(Sender: TObject);
+procedure TFrm_Main.Compile1Click(Sender: TObject);
+
   procedure OutputMessages;
   var
     l: Longint;
@@ -273,37 +269,17 @@ procedure TForm1.Compile1Click(Sender: TObject);
 
     for l := 0 to PSScript.CompilerMessageCount - 1 do
     begin
-      Memo2.Lines.Add('Compilador: '+ PSScript.CompilerErrorToStr(l));
+      Messages.Lines.Add('Compilador: '+ PSScript.CompilerErrorToStr(l));
       if (not b) and (PSScript.CompilerMessages[l] is TIFPSPascalCompilerError) then
       begin
         b := True;
-        Memo1.SelStart := PSScript.CompilerMessages[l].Pos;
+        Editor.SelStart := PSScript.CompilerMessages[l].Pos;
       end;
     end;
   end;
+
 begin
-   Memo2.Lines.Clear;
-   PSScript.Script.Assign(Memo1.Lines);
-   Memo2.Lines.Add('Compilando');
-   if PSScript.Compile then
-   begin
-      OutputMessages;
-      Memo2.Lines.Add('Compilado corretamente');
-      if not PSScript.Execute then
-      begin
-         Memo1.SelStart := PSScript.ExecErrorPosition;
-         Memo2.Lines.Add(PSScript.ExecErrorToString +' em '+Inttostr(PSScript.ExecErrorProcNo)+'.'+Inttostr(PSScript.ExecErrorByteCodePosition));
-      end
-      else
-      begin
-         Memo2.Lines.Add('Executado corretamente');
-      end;
-   end
-   else
-   begin
-      OutputMessages;
-      Memo2.Lines.Add('Compilação com erro');
-   end;
+
 end;
 
 end.
