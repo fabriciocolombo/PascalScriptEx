@@ -3,10 +3,10 @@ unit FrameEditor;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, SynEdit,
-  Vcl.StdCtrls, Vcl.ExtCtrls, SynEditHighlighter, SynHighlighterPas,
-  uPSComponent, uPSCompiler, Vcl.ActnList, Vcl.ComCtrls, SynEditKeyCmds;
+  Windows, Messages, SysUtils, Variants, Classes,
+  Graphics, Controls, Forms, Dialogs, Menus, SynEdit,
+  StdCtrls, ExtCtrls, SynEditHighlighter, SynHighlighterPas,
+  uPSComponent, uPSCompiler, ActnList, ComCtrls, SynEditKeyCmds;
 
 type
   TFrm_Editor = class(TForm)
