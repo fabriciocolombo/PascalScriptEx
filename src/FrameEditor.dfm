@@ -1,22 +1,24 @@
 object Frm_Editor: TFrm_Editor
   Left = 0
   Top = 0
-  ClientHeight = 390
-  ClientWidth = 724
+  ClientHeight = 527
+  ClientWidth = 989
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  KeyPreview = True
   Menu = MainMenu1
   OldCreateOrder = True
+  Position = poScreenCenter
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
     Left = 0
-    Top = 298
-    Width = 724
+    Top = 435
+    Width = 989
     Height = 3
     Cursor = crVSplit
     Align = alBottom
@@ -26,27 +28,29 @@ object Frm_Editor: TFrm_Editor
   end
   object Messages: TMemo
     Left = 0
-    Top = 301
-    Width = 724
+    Top = 438
+    Width = 989
     Height = 89
     Align = alBottom
     ReadOnly = True
     ScrollBars = ssVertical
-    TabOrder = 0
+    TabOrder = 1
     WordWrap = False
+    ExplicitTop = 301
+    ExplicitWidth = 724
   end
   object Editor: TSynEdit
     Left = 0
     Top = 0
-    Width = 724
-    Height = 298
+    Width = 989
+    Height = 416
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Courier New'
     Font.Style = []
-    TabOrder = 1
+    TabOrder = 0
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
@@ -67,7 +71,36 @@ object Frm_Editor: TFrm_Editor
       'end.')
     Options = [eoAutoIndent, eoDragDropEditing, eoDropFiles, eoEnhanceEndKey, eoGroupUndo, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
     WantTabs = True
+    OnCommandProcessed = EditorCommandProcessed
     FontSmoothing = fsmNone
+    ExplicitWidth = 724
+    ExplicitHeight = 298
+  end
+  object StatusBar: TStatusBar
+    Left = 0
+    Top = 416
+    Width = 989
+    Height = 19
+    Panels = <
+      item
+        Text = 'line:col'
+        Width = 90
+      end
+      item
+        Text = 'inputState'
+        Width = 90
+      end
+      item
+        Text = 'fileState'
+        Width = 90
+      end
+      item
+        Text = 'fileName'
+        Width = 50
+      end>
+    ExplicitLeft = 360
+    ExplicitTop = 0
+    ExplicitWidth = 0
   end
   object SynPasSyn: TSynPasSyn
     Options.AutoDetectEnabled = False

@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, SynEdit,
   Vcl.StdCtrls, Vcl.ExtCtrls, SynEditHighlighter, SynHighlighterPas,
-  uPSComponent, uPSCompiler, Vcl.ActnList;
+  uPSComponent, uPSCompiler, Vcl.ActnList, Vcl.ComCtrls, SynEditKeyCmds;
 
 type
   TFrm_Editor = class(TForm)
@@ -65,6 +65,7 @@ type
     acStepInto: TAction;
     acPause: TAction;
     acRun: TAction;
+    StatusBar: TStatusBar;
     procedure PSScriptCompile(Sender: TPSScript);
     procedure PSScriptExecute(Sender: TPSScript);
     procedure acSaveExecute(Sender: TObject);
@@ -76,12 +77,16 @@ type
     procedure acCompileExecute(Sender: TObject);
     procedure acRunExecute(Sender: TObject);
     procedure acGoToLineExecute(Sender: TObject);
+    procedure EditorCommandProcessed(Sender: TObject;
+      var Command: TSynEditorCommand; var AChar: Char; Data: Pointer);
   private
     FActiveFile: TFileName;
     function Compile: Boolean;
     function SaveCheck: Boolean;
 
     procedure RegisterPlugins;
+
+    procedure UpdateStatusBar;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -96,7 +101,7 @@ implementation
 
 {$R *.dfm}
 
-uses PSResources, RegisterPlugins, Frm_GotoLine;
+uses PSResources, RegisterPlugins, Frm_GotoLine, StrUtils;
 
 { TFrame1 }
 
@@ -265,6 +270,26 @@ begin
     Result := True;
 end;
 
+procedure TFrm_Editor.UpdateStatusBar;
+const
+  spCaretPos = 0;
+  spInsertMode = 1;
+  spModified = 2;
+  spFile = 3;
+const
+  InsertText: array[Boolean] of String = ('Overwrite', 'Insert');
+begin
+  StatusBar.Panels[spCaretPos].Text := Format('%d:%d', [Editor.CaretY, Editor.CaretX]);
+
+  if Editor.ReadOnly then
+    StatusBar.Panels[spInsertMode].Text := 'Read only'
+  else
+    StatusBar.Panels[spInsertMode].Text := InsertText[Editor.InsertMode];
+
+  StatusBar.Panels[spModified].Text := IfThen(Editor.Modified, 'Modified');
+  StatusBar.Panels[spFile].Text := FActiveFile;
+end;
+
 constructor TFrm_Editor.Create(AOwner: TComponent);
 begin
   inherited;
@@ -272,6 +297,12 @@ begin
   Caption := sEditorTitle;
 
   RegisterPlugins;
+end;
+
+procedure TFrm_Editor.EditorCommandProcessed(Sender: TObject;
+  var Command: TSynEditorCommand; var AChar: Char; Data: Pointer);
+begin
+  UpdateStatusBar;
 end;
 
 procedure TFrm_Editor.PSScriptCompile(Sender: TPSScript);
