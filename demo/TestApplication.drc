@@ -573,7 +573,7 @@
 STRINGTABLE
 BEGIN
 	PSResources_sFileNotSaved,	L"File has not been saved, save now?"
-	PSResources_sEmptyProgram,	L"Program myprogram;\r\nbegin\r\nend."
+	PSResources_sEmptyProgram,	L"Program myprogram;\r\n\r\nbegin\r\nend."
 	SynEditStrConst_SYNS_FriendlyAttrReservedWord,	L"Reserved Word"
 	SynEditStrConst_SYNS_FriendlyAttrSpace,	L"Space"
 	SynEditStrConst_SYNS_FriendlyAttrString,	L"String"

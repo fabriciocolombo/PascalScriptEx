@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes,
   Graphics, Controls, Forms, Dialogs, Menus, SynEdit,
   StdCtrls, ExtCtrls, SynEditHighlighter, SynHighlighterPas,
-  uPSComponent, uPSCompiler, ActnList, ComCtrls, SynEditKeyCmds;
+  uPSComponent, uPSCompiler, ActnList, ComCtrls, SynEditKeyCmds,
+  SynCompletionProposal, uPSUtils;
 
 type
   TFrm_Editor = class(TForm)
@@ -66,6 +67,7 @@ type
     acPause: TAction;
     acRun: TAction;
     StatusBar: TStatusBar;
+    SynCompletionProposal: TSynCompletionProposal;
     procedure PSScriptCompile(Sender: TPSScript);
     procedure PSScriptExecute(Sender: TPSScript);
     procedure acSaveExecute(Sender: TObject);
@@ -77,8 +79,9 @@ type
     procedure acCompileExecute(Sender: TObject);
     procedure acRunExecute(Sender: TObject);
     procedure acGoToLineExecute(Sender: TObject);
-    procedure EditorCommandProcessed(Sender: TObject;
-      var Command: TSynEditorCommand; var AChar: Char; Data: Pointer);
+    procedure EditorStatusChange(Sender: TObject; Changes: TSynStatusChanges);
+    procedure SynCompletionProposalAfterCodeCompletion(Sender: TObject;
+      const Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
   private
     FActiveFile: TFileName;
     function Compile: Boolean;
@@ -87,6 +90,8 @@ type
     procedure RegisterPlugins;
 
     procedure UpdateStatusBar;
+
+    procedure LoadAutoComplete;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -270,6 +275,15 @@ begin
     Result := True;
 end;
 
+procedure TFrm_Editor.SynCompletionProposalAfterCodeCompletion(Sender: TObject;
+  const Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
+begin
+  if RightStr(Value, 1) = ')' then
+  begin
+    Editor.CaretX := Editor.CaretX - 1;
+  end;
+end;
+
 procedure TFrm_Editor.UpdateStatusBar;
 const
   spCaretPos = 0;
@@ -297,18 +311,94 @@ begin
   Caption := sEditorTitle;
 
   RegisterPlugins;
+
+  acNew.Execute;
+
+  acCompile.Execute;
+
+  UpdateStatusBar;
 end;
 
-procedure TFrm_Editor.EditorCommandProcessed(Sender: TObject;
-  var Command: TSynEditorCommand; var AChar: Char; Data: Pointer);
+procedure TFrm_Editor.EditorStatusChange(Sender: TObject; Changes: TSynStatusChanges);
 begin
   UpdateStatusBar;
+end;
+
+procedure TFrm_Editor.LoadAutoComplete;
+const
+  sFunctionStyle  = '\COLOR{clNavy}function \COLOR{clBlack}\STYLE{+B}%s\STYLE{-B}%s;';
+  sProcedureStyle = '\COLOR{clNavy}procedure \COLOR{clBlack}\STYLE{+B}%s\STYLE{-B}%s;';
+  sVariableStyle = '\COLOR{clNavy}var \COLOR{clBlack}\STYLE{+B}%s: \STYLE{-B}%s;';
+  sConstStyle = '\COLOR{clNavy}const \COLOR{clBlack}\STYLE{+B}%s: \COLOR{clBlue}\STYLE{-B}%s;';
+var
+  i, j: Integer;
+  obj: TPSRegProc;
+  obj_var: TPSVar;
+  obj_const: TPSConstant;
+  vTemplate,
+  vDecl: string;
+  vParam: TPSParameterDecl;
+begin
+  SynCompletionProposal.ItemList.Clear;
+
+  for i:= 0 to PSScript.Comp.GetRegProcCount-1 do
+  begin
+    obj := PSScript.Comp.GetRegProc(i);
+
+    vTemplate := sProcedureStyle;
+    vDecl := EmptyStr;
+    for j := 0 to obj.Decl.ParamCount-1 do
+    begin    
+      vParam := obj.Decl.Params[j];
+
+      vDecl := vDecl + vParam.OrgName;
+
+      if vParam.aType <> nil then
+      begin
+        vTemplate := sFunctionStyle;
+        vDecl := vDecl + ': ' + vParam.aType.OriginalName;
+      end;
+    end;
+
+    if (vDecl <> EmptyStr) then
+    begin
+      vDecl := '(' + vDecl + ')';
+    end;
+
+    if obj.Decl.Result <> nil then
+    begin
+      vDecl := vDecl + ':' + obj.Decl.Result.OriginalName;
+    end;
+       
+    SynCompletionProposal.AddItem(Format(vTemplate, [obj.OrgName, vDecl]), obj.OrgName + '()');
+  end;
+
+  for i:= 0 to PSScript.Comp.GetVarCount-1 do
+  begin
+    obj_var := PSScript.Comp.GetVar(i);
+
+    SynCompletionProposal.AddItem(Format(sVariableStyle, [obj_var.OrgName, obj_var.aType.OriginalName]), obj_var.OrgName);
+  end;
+
+  for i := 0 to PSScript.Comp.GetConstCount-1 do
+  begin
+   obj_const := PSScript.Comp.GetConst(i);
+
+   SynCompletionProposal.AddItem(Format(sConstStyle, [obj_const.OrgName, TConstanstUtils.GetAsString(obj_const.Value)]), obj_const.OrgName);
+  end;
+
+  for i := 0 to PSScript.Comp.GetTypeCount-1 do
+  begin
+
+  end;
 end;
 
 procedure TFrm_Editor.PSScriptCompile(Sender: TPSScript);
 begin
   Sender.AddRegisteredVariable('Application',  'TApplication' );
   Sender.AddRegisteredVariable('Self', 'TForm');
+
+  LoadAutoComplete;
 end;
 
 procedure TFrm_Editor.PSScriptExecute(Sender: TPSScript);

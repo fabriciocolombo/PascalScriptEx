@@ -36,8 +36,6 @@ object Frm_Editor: TFrm_Editor
     ScrollBars = ssVertical
     TabOrder = 1
     WordWrap = False
-    ExplicitTop = 301
-    ExplicitWidth = 724
   end
   object Editor: TSynEdit
     Left = 0
@@ -71,10 +69,8 @@ object Frm_Editor: TFrm_Editor
       'end.')
     Options = [eoAutoIndent, eoDragDropEditing, eoDropFiles, eoEnhanceEndKey, eoGroupUndo, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
     WantTabs = True
-    OnCommandProcessed = EditorCommandProcessed
+    OnStatusChange = EditorStatusChange
     FontSmoothing = fsmNone
-    ExplicitWidth = 724
-    ExplicitHeight = 298
   end
   object StatusBar: TStatusBar
     Left = 0
@@ -98,9 +94,6 @@ object Frm_Editor: TFrm_Editor
         Text = 'fileName'
         Width = 50
       end>
-    ExplicitLeft = 360
-    ExplicitTop = 0
-    ExplicitWidth = 0
   end
   object SynPasSyn: TSynPasSyn
     Options.AutoDetectEnabled = False
@@ -325,5 +318,27 @@ object Frm_Editor: TFrm_Editor
   object PSCustomPlugin: TPSCustomPlugin
     Left = 640
     Top = 264
+  end
+  object SynCompletionProposal: TSynCompletionProposal
+    Options = [scoLimitToMatchedText, scoUseInsertList, scoUsePrettyText, scoEndCharCompletion, scoCompleteWithTab, scoCompleteWithEnter]
+    Width = 600
+    EndOfTokenChr = '()[]. '
+    TriggerChars = '.'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    TitleFont.Charset = DEFAULT_CHARSET
+    TitleFont.Color = clBtnText
+    TitleFont.Height = -11
+    TitleFont.Name = 'MS Sans Serif'
+    TitleFont.Style = [fsBold]
+    Columns = <>
+    ShortCut = 16416
+    Editor = Editor
+    OnAfterCodeCompletion = SynCompletionProposalAfterCodeCompletion
+    Left = 136
+    Top = 152
   end
 end
