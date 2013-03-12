@@ -49,13 +49,13 @@ uses uPSUtils;
 class function TPSUtils.GetAsString(APsScript: TPSScript; AValue: PIfRVariant): String;
 begin
   case AValue.FType.BaseType of
-    btChar: Result := tbtWidestring(AValue^.tchar);
-    btString: Result := tbtWidestring(tbtstring(AValue^.tstring));
+    btChar: Result := tbtWideString(AValue^.tchar);
+    btString: Result := tbtWideString(tbtstring(AValue^.tstring));
     btWideChar: Result := AValue^.twidechar;
     {$IFNDEF PS_NOWIDESTRING}
     btWideString: Result := tbtWideString(AValue^.twidestring);
     {$ENDIF}
-    btUnicodeString: result := tbtUnicodeString(AValue^.tunistring);
+    btUnicodeString: Result := tbtUnicodeString(AValue^.tunistring);
     btU8: Result := IntToStr(TbtU8(AValue^.tu8));
     btS8: Result := IntToStr(TbtS8(AValue^.tS8));
     btU16: Result := IntToStr(TbtU16(AValue^.tu16));

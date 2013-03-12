@@ -14,8 +14,6 @@ var
   S: TSearchRec;
   vDir: string;
 begin
-  Result := False;
-
   vDir := IncludeTrailingPathDelimiter(ADirectory);
 
   if not DirectoryExists(vDir) then
