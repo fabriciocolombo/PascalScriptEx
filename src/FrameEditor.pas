@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, Dialogs, Menus, SynEdit,
   StdCtrls, ExtCtrls, SynEditHighlighter, SynHighlighterPas,
   uPSComponent, uPSCompiler, ActnList, ComCtrls, SynEditKeyCmds,
-  SynCompletionProposal, uPSUtils;
+  SynCompletionProposal, uPSUtils, PSResources;
 
 type
   TFrm_Editor = class(TForm)
@@ -106,7 +106,7 @@ implementation
 
 {$R *.dfm}
 
-uses PSResources, RegisterPlugins, Frm_GotoLine, StrUtils;
+uses RegisterPlugins, Frm_GotoLine, StrUtils;
 
 { TFrame1 }
 
@@ -226,15 +226,19 @@ begin
 
   Result := PSScript.Compile;
 
+  vErrorFound := False;
+
   for i := 0 to PSScript.CompilerMessageCount - 1 do
   begin
     vMessage := PSScript.CompilerMessages[i];
 
-    Messages.Lines.Add(vMessage.MessageToString);
+    Messages.Lines.Add(UnicodeString(vMessage.MessageToString));
 
     if not vErrorFound and (vMessage is TIFPSPascalCompilerError) then
     begin
       Editor.SelStart := vMessage.Pos;
+
+      vErrorFound := True;
     end;
   end;
 end;
@@ -330,14 +334,14 @@ const
   sProcedureStyle = '\COLOR{clNavy}procedure \COLOR{clBlack}\STYLE{+B}%s\STYLE{-B}%s;';
   sVariableStyle = '\COLOR{clNavy}var \COLOR{clBlack}\STYLE{+B}%s: \STYLE{-B}%s;';
   sConstStyle = '\COLOR{clNavy}const \COLOR{clBlack}\STYLE{+B}%s: \COLOR{clBlue}\STYLE{-B}%s;';
+  sTypeStyle = '\COLOR{clNavy}type \COLOR{clBlack}\STYLE{+B}%s: \COLOR{clBlue}\STYLE{-B}%s;';
 var
-  i, j: Integer;
+  i: Integer;
   obj: TPSRegProc;
   obj_var: TPSVar;
   obj_const: TPSConstant;
-  vTemplate,
-  vDecl: string;
-  vParam: TPSParameterDecl;
+  obj_type: TPSType;
+  vTemplate: string;
 begin
   SynCompletionProposal.ItemList.Clear;
 
@@ -346,50 +350,33 @@ begin
     obj := PSScript.Comp.GetRegProc(i);
 
     vTemplate := sProcedureStyle;
-    vDecl := EmptyStr;
-    for j := 0 to obj.Decl.ParamCount-1 do
-    begin    
-      vParam := obj.Decl.Params[j];
-
-      vDecl := vDecl + vParam.OrgName;
-
-      if vParam.aType <> nil then
-      begin
-        vTemplate := sFunctionStyle;
-        vDecl := vDecl + ': ' + vParam.aType.OriginalName;
-      end;
-    end;
-
-    if (vDecl <> EmptyStr) then
-    begin
-      vDecl := '(' + vDecl + ')';
-    end;
-
     if obj.Decl.Result <> nil then
     begin
-      vDecl := vDecl + ':' + obj.Decl.Result.OriginalName;
+      vTemplate := sFunctionStyle;
     end;
-       
-    SynCompletionProposal.AddItem(Format(vTemplate, [obj.OrgName, vDecl]), obj.OrgName + '()');
+
+    SynCompletionProposal.AddItem(Format(vTemplate, [obj.OrgName, TPsUtils.GetMethodParametersDeclaration(obj.Decl)]), UnicodeString(obj.OrgName + '()'));
   end;
 
   for i:= 0 to PSScript.Comp.GetVarCount-1 do
   begin
     obj_var := PSScript.Comp.GetVar(i);
 
-    SynCompletionProposal.AddItem(Format(sVariableStyle, [obj_var.OrgName, obj_var.aType.OriginalName]), obj_var.OrgName);
+    SynCompletionProposal.AddItem(Format(sVariableStyle, [obj_var.OrgName, obj_var.aType.OriginalName]), UnicodeString(obj_var.OrgName));
   end;
 
   for i := 0 to PSScript.Comp.GetConstCount-1 do
   begin
    obj_const := PSScript.Comp.GetConst(i);
 
-   SynCompletionProposal.AddItem(Format(sConstStyle, [obj_const.OrgName, TConstanstUtils.GetAsString(obj_const.Value)]), obj_const.OrgName);
+   SynCompletionProposal.AddItem(Format(sConstStyle, [obj_const.OrgName, TPSUtils.GetAsString(PSScript, obj_const.Value)]), UnicodeString(obj_const.OrgName));
   end;
 
   for i := 0 to PSScript.Comp.GetTypeCount-1 do
   begin
+    obj_type := PSScript.Comp.GetType(i);
 
+    SynCompletionProposal.AddItem(Format(sTypeStyle, [obj_type.OriginalName, TPSUtils.GetPSTypeName(PSScript, obj_type)]), UnicodeString(obj_type.OriginalName));
   end;
 end;
 
