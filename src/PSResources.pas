@@ -2,12 +2,7 @@ unit PSResources;
 
 interface
 
-uses Classes, SysUtils, uPSRunTime, uPSCompiler, uPSComponent, Variants, Types, TypInfo;
-
-{$IFNDEF UNICODE}
-type
-  UnicodeString = WideString;
-{$ENDIF}
+uses Classes, SysUtils, uPSRunTime, uPSCompiler, uPSComponent, Variants, Types, TypInfo, uPSUtils;
 
 resourcestring
   sBeginCompile = 'Compiling';
@@ -31,62 +26,60 @@ type
   TPSUtils = class
   public
     class function GetValue(AValue: PIfRVariant): Variant;
-    class function GetAsString(APsScript: TPSScript; AValue: PIfRVariant): String;
+    class function GetAsString(APsScript: TPSScript; AValue: PIfRVariant): UnicodeString;
 
-    class function GetPSTypeName(APsScript: TPSScript; APSType: TPSType): String;
-    class function GetMethodDeclaration(AMethodName: String; APSParametersDecl: TPSParametersDecl): String;
-    class function GetMethodParametersDeclaration(APSParametersDecl: TPSParametersDecl): String;
+    class function GetPSTypeName(APsScript: TPSScript; APSType: TPSType): TbtString;
+    class function GetMethodDeclaration(AMethodName: TbtString; APSParametersDecl: TPSParametersDecl): TbtString;
+    class function GetMethodParametersDeclaration(APSParametersDecl: TPSParametersDecl): TbtString;
 
-    class function GetEnumBounds(APsScript: TPSScript; AType: TPSType; out ALow, AHigh: String) : Boolean;
+    class function GetEnumBounds(APsScript: TPSScript; AType: TPSType; out ALow, AHigh: TbtString) : Boolean;
   end;
 
 implementation
 
 { TConstanstUtils }
 
-uses uPSUtils;
-
-class function TPSUtils.GetAsString(APsScript: TPSScript; AValue: PIfRVariant): String;
+class function TPSUtils.GetAsString(APsScript: TPSScript; AValue: PIfRVariant): UnicodeString;
 begin
   case AValue.FType.BaseType of
-    btChar: Result := tbtWideString(AValue^.tchar);
-    btString: Result := tbtWideString(tbtstring(AValue^.tstring));
+    btChar: Result := String(tbtChar(AValue^.tchar));
+    btString: Result := String(tbtstring(AValue^.tstring));
     btWideChar: Result := AValue^.twidechar;
     {$IFNDEF PS_NOWIDESTRING}
     btWideString: Result := tbtWideString(AValue^.twidestring);
     {$ENDIF}
     btUnicodeString: Result := tbtUnicodeString(AValue^.tunistring);
-    btU8: Result := IntToStr(TbtU8(AValue^.tu8));
-    btS8: Result := IntToStr(TbtS8(AValue^.tS8));
-    btU16: Result := IntToStr(TbtU16(AValue^.tu16));
-    btS16: Result := IntToStr(TbtS16(AValue^.ts16));
+    btU8: Result := SysUtils.IntToStr(TbtU8(AValue^.tu8));
+    btS8: Result := SysUtils.IntToStr(TbtS8(AValue^.tS8));
+    btU16: Result := SysUtils.IntToStr(TbtU16(AValue^.tu16));
+    btS16: Result := SysUtils.IntToStr(TbtS16(AValue^.ts16));
     btSet: begin
-             Result := 'set of ' + TPSSetType(AValue^.FType).SetType.OriginalName;
+             Result := 'set of ' + String(TPSSetType(AValue^.FType).SetType.OriginalName);
            end;
-    btU32: Result := IntToStr(TbtU32(AValue^.tu32));
+    btU32: Result := SysUtils.IntToStr(TbtU32(AValue^.tu32));
     btEnum: begin
              Result := Format('%s(%d)', [AValue^.FType.OriginalName, TbtU32(AValue^.tu32)]);
             end;
-    btS32: Result := IntToStr(TbtS32(AValue^.ts32));
-    btSingle: Result := FloatToStr(TbtSingle(AValue^.tsingle));
-    btDouble: Result := FloatToStr(TbtDouble(AValue^.tdouble));
-    btExtended: Result := FloatToStr(AValue^.textended);
-    btCurrency: Result := CurrToStr(AValue^.tcurrency);
+    btS32: Result := SysUtils.IntToStr(TbtS32(AValue^.ts32));
+    btSingle: Result := SysUtils.FloatToStr(TbtSingle(AValue^.tsingle));
+    btDouble: Result := SysUtils.FloatToStr(TbtDouble(AValue^.tdouble));
+    btExtended: Result := SysUtils.FloatToStr(AValue^.textended);
+    btCurrency: Result := SysUtils.CurrToStr(AValue^.tcurrency);
     {$IFNDEF PS_NOINT64}
-      btS64: Result := IntToStr(AValue^.ts64);
+      btS64: Result := SysUtils.IntToStr(AValue^.ts64);
     {$ENDIF}
   else
     Result := EmptyStr;
   end;
 end;
 
-class function TPSUtils.GetEnumBounds(APsScript: TPSScript; AType: TPSType; out ALow, AHigh: String) : Boolean;
+class function TPSUtils.GetEnumBounds(APsScript: TPSScript; AType: TPSType; out ALow, AHigh: TbtString) : Boolean;
 var
   i: Integer;
   vConst: TPSConstant;
 begin
-  ALow := EmptyStr;
-  AHigh := EmptyStr;
+  ALow := EmptyAnsiStr;
+  AHigh := EmptyAnsiStr;
 
   for i := 0 to APsScript.Comp.GetConstCount-1 do
   begin
@@ -94,7 +87,7 @@ begin
 
     if (vConst.Value^.FType = AType) then
     begin
-      if ALow = EmptyStr then
+      if ALow = EmptyAnsiStr then
       begin
         ALow := vConst.OrgName;
       end;
@@ -102,28 +95,32 @@ begin
     end;
   end;
 
-  Result := (AHigh <> EmptyStr);
+  Result := (AHigh <> '');
 end;
 
-class function TPSUtils.GetMethodDeclaration(AMethodName: String; APSParametersDecl: TPSParametersDecl): String;
+class function TPSUtils.GetMethodDeclaration(AMethodName: TbtString; APSParametersDecl: TPSParametersDecl): TbtString;
+var
+  vDecl: TbtString;
 begin
+  vDecl := AMethodName + GetMethodParametersDeclaration(APSParametersDecl);
+
   if APSParametersDecl.Result <> nil then
   begin
-    Result := 'function ' + AMethodName + GetMethodParametersDeclaration(APSParametersDecl);
+    Result := 'function ' + vDecl;
   end
   else
   begin
-    Result := 'procedure ' + AMethodName + GetMethodParametersDeclaration(APSParametersDecl);
+    Result := 'procedure ' + vDecl;
   end;
 end;
 
-class function TPSUtils.GetMethodParametersDeclaration(APSParametersDecl: TPSParametersDecl): String;
+class function TPSUtils.GetMethodParametersDeclaration(APSParametersDecl: TPSParametersDecl): TbtString;
 var
   i: Integer;
-  vDecl: string;
+  vDecl: TbtString;
   vParam: TPSParameterDecl;
 begin
-  vDecl := EmptyStr;
+  vDecl := EmptyAnsiStr;
   for i := 0 to APSParametersDecl.ParamCount-1 do
   begin
     vParam := APSParametersDecl.Params[i];
@@ -146,7 +143,7 @@ begin
     end;
   end;
 
-  if (vDecl <> EmptyStr) then
+  if (vDecl <> EmptyAnsiStr) then
   begin
     vDecl := '(' + vDecl + ')';
   end;
@@ -159,9 +156,9 @@ begin
   end;
 end;
 
-class function TPSUtils.GetPSTypeName(APsScript: TPSScript; APSType: TPSType): String;
+class function TPSUtils.GetPSTypeName(APsScript: TPSScript; APSType: TPSType): TbtString;
 var
-  vLow, vHigh: String;
+  vLow, vHigh: TbtString;
 begin
   case APSType.BaseType of
     btProcPtr: Result := GetMethodDeclaration(APSType.OriginalName, TPSProceduralType(APSType).ProcDef);
@@ -186,7 +183,7 @@ begin
                begin
                  if Assigned(ClassInheritsFrom) then
                  begin
-                   Result := Result + Format('(%s)', [ClassInheritsFrom.aType.OriginalName]);
+                   Result := Result + '(' + ClassInheritsFrom.aType.OriginalName + ')';
                  end;
                end;
              end;
@@ -200,7 +197,7 @@ begin
                    begin
                      if Assigned(InheritedFrom) then
                      begin
-                       Result := Result + Format('(%s)', [InheritedFrom.aType.OriginalName]);
+                       Result := Result + '(' + InheritedFrom.aType.OriginalName + ')';
                      end;
                    end;
                  end;

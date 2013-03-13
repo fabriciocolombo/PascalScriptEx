@@ -4,15 +4,15 @@ interface
 
 uses Classes, SysUtils;
 
-function ListFiles(ADirectory, AFilter: string; AList: TStrings) : Boolean;
+function ListFiles(ADirectory, AFilter: String; AList: TStrings) : Boolean;
 procedure InternalRaiseException(E: Exception);
 
 implementation
 
-function ListFiles(ADirectory, AFilter: string; AList: TStrings) : Boolean;
+function ListFiles(ADirectory, AFilter: String; AList: TStrings) : Boolean;
 var
   S: TSearchRec;
-  vDir: string;
+  vDir: String;
 begin
   vDir := IncludeTrailingPathDelimiter(ADirectory);
 

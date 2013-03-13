@@ -232,7 +232,7 @@ begin
   begin
     vMessage := PSScript.CompilerMessages[i];
 
-    Messages.Lines.Add(UnicodeString(vMessage.MessageToString));
+    Messages.Lines.Add(String(vMessage.MessageToString));
 
     if not vErrorFound and (vMessage is TIFPSPascalCompilerError) then
     begin
