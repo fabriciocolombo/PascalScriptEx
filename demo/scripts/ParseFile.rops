@@ -162,6 +162,8 @@ begin
 	mmR.Top := ESPACAMENTO + mmo.height + 10;
 	mmR.Height := (p.height div 2) - ALTURA_BARRA_TITULO - b.height - ESPACAMENTO;
 	mmR.Width := mmO.width - ((p.width div 2) - ESPACAMENTO - 15) - 15;
+ 
+        t.Show;
 end;
 
 begin
@@ -172,9 +174,4 @@ begin
 	end;   
 	
 	CreateForm;
-	try
-	  t.ShowModal;
-    finally
-	  t.Free;
-	end;
 end.

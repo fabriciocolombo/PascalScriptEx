@@ -8,8 +8,11 @@
   resources were bound to the produced executable.
 */
 
-#define PSResources_sFileNotSaved 64960
-#define PSResources_sEmptyProgram 64961
+#define PSResources_sEditorTitleRunning 64960
+#define PSResources_sEditorTitlePaused 64961
+#define PSResources_sEditorTitleStopped 64962
+#define PSResources_sFileNotSaved 64963
+#define PSResources_sEmptyProgram 64964
 #define SynEditStrConst_SYNS_FriendlyAttrReservedWord 64976
 #define SynEditStrConst_SYNS_FriendlyAttrSpace 64977
 #define SynEditStrConst_SYNS_FriendlyAttrString 64978
@@ -572,6 +575,9 @@
 #define System_SysConst_SDivByZero 65535
 STRINGTABLE
 BEGIN
+	PSResources_sEditorTitleRunning,	L"Editor - Running"
+	PSResources_sEditorTitlePaused,	L"Editor - Paused"
+	PSResources_sEditorTitleStopped,	L"Editor - Stopped"
 	PSResources_sFileNotSaved,	L"File has not been saved, save now?"
 	PSResources_sEmptyProgram,	L"Program myprogram;\r\n\r\nbegin\r\nend."
 	SynEditStrConst_SYNS_FriendlyAttrReservedWord,	L"Reserved Word"

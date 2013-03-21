@@ -70,6 +70,9 @@ object Frm_Editor: TFrm_Editor
     Options = [eoAutoIndent, eoDragDropEditing, eoDropFiles, eoEnhanceEndKey, eoGroupUndo, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
     WantTabs = True
     OnDropFiles = EditorDropFiles
+    OnGutterClick = EditorGutterClick
+    OnGutterPaint = EditorGutterPaint
+    OnSpecialLineColors = EditorSpecialLineColors
     OnStatusChange = EditorStatusChange
     FontSmoothing = fsmNone
   end
@@ -103,21 +106,16 @@ object Frm_Editor: TFrm_Editor
     Left = 48
     Top = 152
   end
-  object PSScript: TPSScript
-    CompilerOptions = []
-    OnCompile = PSScriptCompile
-    OnExecute = PSScriptExecute
-    Plugins = <>
-    UsePreProcessor = False
-    Left = 640
-    Top = 152
-  end
   object PSScriptDebugger: TPSScriptDebugger
     CompilerOptions = []
-    OnCompile = PSScriptCompile
-    OnExecute = PSScriptExecute
+    OnCompile = PSScript_Compile
+    OnExecute = PSScript_Execute
+    OnAfterExecute = PSScriptDebuggerAfterExecute
     Plugins = <>
     UsePreProcessor = False
+    OnIdle = PSScriptDebuggerIdle
+    OnLineInfo = PSScriptDebuggerLineInfo
+    OnBreakpoint = PSScriptDebuggerBreakpoint
     Left = 640
     Top = 208
   end
@@ -290,18 +288,18 @@ object Frm_Editor: TFrm_Editor
       Category = 'Run'
       Caption = '&Step Over'
       ShortCut = 119
-      Visible = False
+      OnExecute = acStepOverExecute
     end
     object acStepInto: TAction
       Category = 'Run'
       Caption = 'Step &Into'
       ShortCut = 118
-      Visible = False
+      OnExecute = acStepIntoExecute
     end
     object acPause: TAction
       Category = 'Run'
       Caption = '&Pause'
-      Visible = False
+      OnExecute = acPauseExecute
     end
     object acReset: TAction
       Category = 'Run'

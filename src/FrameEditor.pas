@@ -7,7 +7,7 @@ uses
   Graphics, Controls, Forms, Dialogs, Menus, SynEdit,
   StdCtrls, ExtCtrls, SynEditHighlighter, SynHighlighterPas,
   uPSComponent, uPSCompiler, ActnList, ComCtrls, SynEditKeyCmds,
-  SynCompletionProposal, uPSUtils, PSResources;
+  SynCompletionProposal, uPSUtils, PSResources, uPSDebugger, uPSRunTime;
 
 type
   TFrm_Editor = class(TForm)
@@ -15,7 +15,6 @@ type
     Messages: TMemo;
     Editor: TSynEdit;
     SynPasSyn: TSynPasSyn;
-    PSScript: TPSScript;
     PSScriptDebugger: TPSScriptDebugger;
     OpenDialog1: TOpenDialog;
     SaveDialog1: TSaveDialog;
@@ -68,8 +67,8 @@ type
     acRun: TAction;
     StatusBar: TStatusBar;
     SynCompletionProposal: TSynCompletionProposal;
-    procedure PSScriptCompile(Sender: TPSScript);
-    procedure PSScriptExecute(Sender: TPSScript);
+    procedure PSScript_Compile(Sender: TPSScript);
+    procedure PSScript_Execute(Sender: TPSScript);
     procedure acSaveExecute(Sender: TObject);
     procedure acNewExecute(Sender: TObject);
     procedure acOpenExecute(Sender: TObject);
@@ -82,8 +81,25 @@ type
     procedure EditorStatusChange(Sender: TObject; Changes: TSynStatusChanges);
     procedure SynCompletionProposalAfterCodeCompletion(Sender: TObject; const Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
     procedure EditorDropFiles(Sender: TObject; X, Y: Integer; AFiles: TStrings);
+    procedure EditorSpecialLineColors(Sender: TObject; Line: Integer;
+      var Special: Boolean; var FG, BG: TColor);
+    procedure PSScriptDebuggerLineInfo(Sender: TObject;
+      const FileName: AnsiString; Position, Row, Col: Cardinal);
+    procedure PSScriptDebuggerIdle(Sender: TObject);
+    procedure PSScriptDebuggerAfterExecute(Sender: TPSScript);
+    procedure PSScriptDebuggerBreakpoint(Sender: TObject;
+      const FileName: AnsiString; Position, Row, Col: Cardinal);
+    procedure EditorGutterClick(Sender: TObject; Button: TMouseButton; X, Y,
+      Line: Integer; Mark: TSynEditMark);
+    procedure EditorGutterPaint(Sender: TObject; aLine, X, Y: Integer);
+    procedure acStepOverExecute(Sender: TObject);
+    procedure acStepIntoExecute(Sender: TObject);
+    procedure acPauseExecute(Sender: TObject);
   private
     FActiveFile: TFileName;
+    FActiveLine: LongInt;
+    FResume: Boolean;
+
     function Compile: Boolean;
     function SaveCheck: Boolean;
 
@@ -160,27 +176,40 @@ begin
   end;
 end;
 
+procedure TFrm_Editor.acPauseExecute(Sender: TObject);
+begin
+  if PSScriptDebugger.Exec.Status = isRunning then
+  begin
+    PSScriptDebugger.Pause;
+//    PSScriptDebugger.StepInto;
+  end;
+end;
+
 procedure TFrm_Editor.acResetExecute(Sender: TObject);
 begin
-  if PSScript.Exec.Status in isRunningOrPaused then
+  if PSScriptDebugger.Exec.Status in isRunningOrPaused then
   begin
-    PSScript.Stop;
+    PSScriptDebugger.Stop;
   end;
 end;
 
 procedure TFrm_Editor.acRunExecute(Sender: TObject);
 begin
-  if Compile then
+  if PSScriptDebugger.Running then
   begin
-    if PSScript.Execute then
+    FResume := True;
+  end
+  else if Compile then
+  begin
+    if PSScriptDebugger.Execute then
     begin
       Messages.Lines.Add(sSuccessfullyExecuted);
     end else
     begin
       Messages.Lines.Add(Format(sRuntimeError,
-                                ['[empty]', PSScript.ExecErrorRow, PSScript.ExecErrorCol,
-                                 PSScript.ExecErrorProcNo, PSScript.ExecErrorByteCodePosition,
-                                 PSScript.ExecErrorToString]));
+                                ['[empty]', PSScriptDebugger.ExecErrorRow, PSScriptDebugger.ExecErrorCol,
+                                 PSScriptDebugger.ExecErrorProcNo, PSScriptDebugger.ExecErrorByteCodePosition,
+                                 PSScriptDebugger.ExecErrorToString]));
     end;
   end;
 end;
@@ -208,6 +237,38 @@ begin
   end;
 end;
 
+procedure TFrm_Editor.acStepIntoExecute(Sender: TObject);
+begin
+  if PSScriptDebugger.Exec.Status in isRunningOrPaused then
+  begin
+    PSScriptDebugger.StepInto;
+  end
+  else
+  begin
+    if Compile then
+    begin
+      PSScriptDebugger.StepInto;
+      PSScriptDebugger.Execute;
+    end;
+  end;
+end;
+
+procedure TFrm_Editor.acStepOverExecute(Sender: TObject);
+begin
+  if PSScriptDebugger.Exec.Status in isRunningOrPaused then
+  begin
+    PSScriptDebugger.StepOver;
+  end
+  else
+  begin
+    if Compile then
+    begin
+      PSScriptDebugger.StepInto;
+      PSScriptDebugger.Execute;
+    end;
+  end;
+end;
+
 function TFrm_Editor.Compile: Boolean;
 var
   i: Integer;
@@ -216,17 +277,17 @@ var
 begin
   Messages.Lines.Clear;
 
-  PSScript.Script.Assign(Editor.Lines);
+  PSScriptDebugger.Script.Assign(Editor.Lines);
 
   Messages.Lines.Add(sBeginCompile);
 
-  Result := PSScript.Compile;
+  Result := PSScriptDebugger.Compile;
 
   vErrorFound := False;
 
-  for i := 0 to PSScript.CompilerMessageCount - 1 do
+  for i := 0 to PSScriptDebugger.CompilerMessageCount - 1 do
   begin
-    vMessage := PSScript.CompilerMessages[i];
+    vMessage := PSScriptDebugger.CompilerMessages[i];
 
     Messages.Lines.Add(String(vMessage.MessageToString));
 
@@ -241,14 +302,9 @@ end;
 
 procedure TFrm_Editor.RegisterPlugins;
 begin
-  RegisterPSPlugins(PSScript);
   RegisterPSPlugins(PSScriptDebugger);
 
   //Custom Plugin to Handle events on form
-  with TPSPluginItem(PSScript.Plugins.Add) do
-  begin
-    Plugin := PSCustomPlugin;
-  end;
   with TPSPluginItem(PSScriptDebugger.Plugins.Add) do
   begin
     Plugin := PSCustomPlugin;
@@ -327,6 +383,60 @@ begin
   end;
 end;
 
+procedure TFrm_Editor.EditorGutterClick(Sender: TObject; Button: TMouseButton;
+  X, Y, Line: Integer; Mark: TSynEditMark);
+begin
+  if PSScriptDebugger.HasBreakPoint(PSScriptDebugger.MainFileName, Line) then
+    PSScriptDebugger.ClearBreakPoint(PSScriptDebugger.MainFileName, Line)
+  else
+    PSScriptDebugger.SetBreakPoint(PSScriptDebugger.MainFileName, Line);
+  Editor.Refresh;
+end;
+
+procedure TFrm_Editor.EditorGutterPaint(Sender: TObject; aLine, X, Y: Integer);
+var
+  vSize: Integer;
+  vSpacer: Integer;
+begin
+  if PSScriptDebugger.HasBreakPoint(PSScriptDebugger.MainFileName, aLine) then
+  begin
+    Editor.Canvas.Brush.Style := bsSolid;
+    Editor.Canvas.Brush.Color := clRed;
+    Editor.Canvas.Pen.Color := clBlack;
+
+    vSize := (Editor.Gutter.Width div 2) - 2;
+    vSpacer := (Editor.Gutter.Width - vSize) div 2;
+
+    Editor.Canvas.Ellipse(x + vSpacer, y + vSize, x + vSize + vSpacer, y);
+  end;
+end;
+
+procedure TFrm_Editor.EditorSpecialLineColors(Sender: TObject; Line: Integer;
+  var Special: Boolean; var FG, BG: TColor);
+begin
+  Special := False;
+
+  if PSScriptDebugger.HasBreakPoint(PSScriptDebugger.MainFileName, Line) then
+  begin
+    Special := True;
+    if Line = FActiveLine then
+    begin
+      BG := clWhite;
+      FG := clRed;
+    end else
+    begin
+      FG := clWhite;
+      BG := clRed;
+    end;
+  end
+  else if Line = FActiveLine then
+  begin
+    Special := True;
+    FG := clWindowText;
+    BG := clGradientActiveCaption;
+  end;
+end;
+
 procedure TFrm_Editor.EditorStatusChange(Sender: TObject; Changes: TSynStatusChanges);
 begin
   UpdateStatusBar;
@@ -349,9 +459,9 @@ var
 begin
   SynCompletionProposal.ItemList.Clear;
 
-  for i:= 0 to PSScript.Comp.GetRegProcCount-1 do
+  for i:= 0 to PSScriptDebugger.Comp.GetRegProcCount-1 do
   begin
-    obj := PSScript.Comp.GetRegProc(i);
+    obj := PSScriptDebugger.Comp.GetRegProc(i);
 
     vTemplate := sProcedureStyle;
     if obj.Decl.Result <> nil then
@@ -362,25 +472,25 @@ begin
     SynCompletionProposal.AddItem(Format(vTemplate, [obj.OrgName, TPsUtils.GetMethodParametersDeclaration(obj.Decl)]), UnicodeString(obj.OrgName + '()'));
   end;
 
-  for i:= 0 to PSScript.Comp.GetVarCount-1 do
+  for i:= 0 to PSScriptDebugger.Comp.GetVarCount-1 do
   begin
-    obj_var := PSScript.Comp.GetVar(i);
+    obj_var := PSScriptDebugger.Comp.GetVar(i);
 
     SynCompletionProposal.AddItem(Format(sVariableStyle, [obj_var.OrgName, obj_var.aType.OriginalName]), UnicodeString(obj_var.OrgName));
   end;
 
-  for i := 0 to PSScript.Comp.GetConstCount-1 do
+  for i := 0 to PSScriptDebugger.Comp.GetConstCount-1 do
   begin
-   obj_const := PSScript.Comp.GetConst(i);
+   obj_const := PSScriptDebugger.Comp.GetConst(i);
 
-   SynCompletionProposal.AddItem(Format(sConstStyle, [obj_const.OrgName, TPSUtils.GetAsString(PSScript, obj_const.Value)]), UnicodeString(obj_const.OrgName));
+   SynCompletionProposal.AddItem(Format(sConstStyle, [obj_const.OrgName, TPSUtils.GetAsString(PSScriptDebugger, obj_const.Value)]), UnicodeString(obj_const.OrgName));
   end;
 
-  for i := 0 to PSScript.Comp.GetTypeCount-1 do
+  for i := 0 to PSScriptDebugger.Comp.GetTypeCount-1 do
   begin
-    obj_type := PSScript.Comp.GetType(i);
+    obj_type := PSScriptDebugger.Comp.GetType(i);
 
-    SynCompletionProposal.AddItem(Format(sTypeStyle, [obj_type.OriginalName, TPSUtils.GetPSTypeName(PSScript, obj_type)]), UnicodeString(obj_type.OriginalName));
+    SynCompletionProposal.AddItem(Format(sTypeStyle, [obj_type.OriginalName, TPSUtils.GetPSTypeName(PSScriptDebugger, obj_type)]), UnicodeString(obj_type.OriginalName));
   end;
 end;
 
@@ -398,7 +508,7 @@ begin
   FActiveFile := AFileName;
 end;
 
-procedure TFrm_Editor.PSScriptCompile(Sender: TPSScript);
+procedure TFrm_Editor.PSScript_Compile(Sender: TPSScript);
 begin
   Sender.AddRegisteredVariable('Application',  'TApplication' );
   Sender.AddRegisteredVariable('Self', 'TForm');
@@ -406,7 +516,72 @@ begin
   LoadAutoComplete;
 end;
 
-procedure TFrm_Editor.PSScriptExecute(Sender: TPSScript);
+procedure TFrm_Editor.PSScriptDebuggerAfterExecute(Sender: TPSScript);
+begin
+  Caption := sEditorTitle;
+  FActiveLine := 0;
+  Editor.Refresh;
+end;
+
+procedure TFrm_Editor.PSScriptDebuggerBreakpoint(Sender: TObject;
+  const FileName: AnsiString; Position, Row, Col: Cardinal);
+begin
+  FActiveLine := Row;
+  if (FActiveLine < Editor.TopLine+2) or (FActiveLine > Editor.TopLine + Editor.LinesInWindow-2) then
+  begin
+    Editor.TopLine := FActiveLine - (Editor.LinesInWindow div 2);
+  end;
+  Editor.CaretY := FActiveLine;
+  Editor.CaretX := 1;
+
+  Editor.Refresh;
+end;
+
+procedure TFrm_Editor.PSScriptDebuggerIdle(Sender: TObject);
+begin
+  Application.ProcessMessages;
+  //Birb: don't use Application.HandleMessage here,
+  //else GUI will be unrensponsive if you have a tight loop
+  //and won't be able to use Run/Reset menu action
+  if FResume then
+  begin
+    FResume := False;
+    PSScriptDebugger.Resume;
+    FActiveLine := 0;
+    Editor.Refresh;
+  end
+  else
+  begin
+    if (PSScriptDebugger.Exec.DebugMode = dmPaused) then
+      Caption := sEditorTitleStopped
+    else if (PSScriptDebugger.Exec.Status = isPaused) then
+      Caption := sEditorTitlePaused
+    else
+      Caption := sEditorTitleRunning;
+  end;
+end;
+
+procedure TFrm_Editor.PSScriptDebuggerLineInfo(Sender: TObject;
+  const FileName: AnsiString; Position, Row, Col: Cardinal);
+begin
+  if (PSScriptDebugger.Exec.DebugMode <> dmRun) and (PSScriptDebugger.Exec.DebugMode <> dmStepOver) then
+  begin
+    FActiveLine := Row;
+    if (FActiveLine < Editor.TopLine +2) or (FActiveLine > Editor.TopLine + Editor.LinesInWindow-2) then
+    begin
+      Editor.TopLine := FActiveLine - (Editor.LinesInWindow div 2);
+    end;
+
+    Editor.CaretY := FActiveLine;
+    Editor.CaretX := 1;
+
+    Editor.Refresh;
+  end
+  else
+    Application.ProcessMessages;
+end;
+
+procedure TFrm_Editor.PSScript_Execute(Sender: TPSScript);
 begin
   Sender.SetVarToInstance('Application', Application);
   Sender.SetVarToInstance('Self', Self);

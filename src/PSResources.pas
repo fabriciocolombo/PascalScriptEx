@@ -13,6 +13,8 @@ resourcestring
   sUnnamed = 'Unnamed';
   sEditorTitle = 'Editor';
   sEditorTitleRunning = 'Editor - Running';
+  sEditorTitlePaused = 'Editor - Paused';
+  sEditorTitleStopped = 'Editor - Stopped';
   sInputBoxTiyle = 'Script';
   sFileNotSaved = 'File has not been saved, save now?';
   sEmptyProgram = 'Program myprogram;' + sLineBreak + sLineBreak +
