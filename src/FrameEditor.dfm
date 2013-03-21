@@ -69,6 +69,7 @@ object Frm_Editor: TFrm_Editor
       'end.')
     Options = [eoAutoIndent, eoDragDropEditing, eoDropFiles, eoEnhanceEndKey, eoGroupUndo, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
     WantTabs = True
+    OnDropFiles = EditorDropFiles
     OnStatusChange = EditorStatusChange
     FontSmoothing = fsmNone
   end

@@ -80,8 +80,8 @@ type
     procedure acRunExecute(Sender: TObject);
     procedure acGoToLineExecute(Sender: TObject);
     procedure EditorStatusChange(Sender: TObject; Changes: TSynStatusChanges);
-    procedure SynCompletionProposalAfterCodeCompletion(Sender: TObject;
-      const Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
+    procedure SynCompletionProposalAfterCodeCompletion(Sender: TObject; const Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
+    procedure EditorDropFiles(Sender: TObject; X, Y: Integer; AFiles: TStrings);
   private
     FActiveFile: TFileName;
     function Compile: Boolean;
@@ -92,6 +92,8 @@ type
     procedure UpdateStatusBar;
 
     procedure LoadAutoComplete;
+
+    procedure LoadFromFile(AFileName: string);
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -152,15 +154,9 @@ end;
 
 procedure TFrm_Editor.acOpenExecute(Sender: TObject);
 begin
- if SaveCheck then
+ if SaveCheck and OpenDialog1.Execute then
   begin
-    if OpenDialog1.Execute then
-    begin
-      Editor.ClearAll;
-      Editor.Lines.LoadFromFile(OpenDialog1.FileName);
-      Editor.Modified := False;
-      FActiveFile := OpenDialog1.FileName;
-    end;
+    LoadFromFile(OpenDialog1.FileName);
   end;
 end;
 
@@ -323,6 +319,14 @@ begin
   UpdateStatusBar;
 end;
 
+procedure TFrm_Editor.EditorDropFiles(Sender: TObject; X, Y: Integer; AFiles: TStrings);
+begin
+  if (AFiles.Count > 0) and SaveCheck then
+  begin
+    LoadFromFile(AFiles[0]);
+  end;
+end;
+
 procedure TFrm_Editor.EditorStatusChange(Sender: TObject; Changes: TSynStatusChanges);
 begin
   UpdateStatusBar;
@@ -378,6 +382,20 @@ begin
 
     SynCompletionProposal.AddItem(Format(sTypeStyle, [obj_type.OriginalName, TPSUtils.GetPSTypeName(PSScript, obj_type)]), UnicodeString(obj_type.OriginalName));
   end;
+end;
+
+procedure TFrm_Editor.LoadFromFile(AFileName: string);
+var
+  vRelativePath: string;
+begin
+  SetCurrentDir(ExtractFilePath(Application.ExeName));
+
+  vRelativePath := ExtractRelativePath(IncludeTrailingPathDelimiter(GetCurrentDir), ExtractFilePath(AFileName));
+
+  Editor.ClearAll;
+  Editor.Lines.LoadFromFile(vRelativePath + ExtractFileName(AFileName));
+  Editor.Modified := False;
+  FActiveFile := AFileName;
 end;
 
 procedure TFrm_Editor.PSScriptCompile(Sender: TPSScript);

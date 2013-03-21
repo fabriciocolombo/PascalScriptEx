@@ -4,7 +4,7 @@ const
         ALTURA_BARRA_TITULO 	= 20;
         ESPACAMENTO 		= 10;
         TAMANHO_BORDA 		= 4;
-        AMOSTRAGEM_ARQUIVO 	= '..\Resources\Plantio_13_2_20137_28_57.txt';
+        AMOSTRAGEM_ARQUIVO 	= 'Resources\Plantio_13_2_20137_28_57.txt';
   
 var
 	t 			: TForm;
