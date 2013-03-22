@@ -104,6 +104,15 @@ object Frm_Editor: TFrm_Editor
     Options.AutoDetectEnabled = False
     Options.AutoDetectLineLimit = 0
     Options.Visible = False
+    CommentAttri.Foreground = clGreen
+    DirectiveAttri.Foreground = clTeal
+    KeyAttri.Foreground = clNavy
+    NumberAttri.Foreground = clBlue
+    FloatAttri.Foreground = clBlue
+    HexAttri.Foreground = clBlue
+    StringAttri.Foreground = clBlue
+    CharAttri.Foreground = clNavy
+    SymbolAttri.Foreground = clBlue
     Left = 48
     Top = 152
   end
