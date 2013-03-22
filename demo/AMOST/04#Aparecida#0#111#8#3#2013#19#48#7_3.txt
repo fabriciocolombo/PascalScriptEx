@@ -1,0 +1,16 @@
+Latitude:37.422005
+Longitude:-122.084095
+Eficiencia:V
+
+
+ANA1_N:C_2
+ANA2_N:C_1
+ANA3_N:C_1.46
+ANA4_N:C_1.56
+ANA5_C:C_B
+ANA9_C:C_APP
+ANA11_C:C_A
+ANA21_C:C_adriano
+ANA22_C:C_drianim
+ANA25_C:C_teste
+Foto:

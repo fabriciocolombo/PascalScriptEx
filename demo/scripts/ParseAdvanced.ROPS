@@ -1,0 +1,261 @@
+program Test;
+
+const
+	ALTURA_BARRA_TITULO 		= 20;
+	ALTURA_TITULO				= 20;
+	ALTURA_MEMO_DADOS			= 150;
+	ESPACAMENTO 				= 10;
+	TAMANHO_BORDA 				= 4;
+ 	BORDA_SUPERIOR				= 15;
+	ALTURA_BARRA_STATUS		= 30;
+	DIRETORIO_AMOSTRAGENS 	= '.\AMOST\';
+
+var
+	frmPrincipal		: TForm;
+	
+	lblTitulo			: TLabel;
+	lblBarraStatus		: TLabel;
+
+	btnListarArquivos			: TButton;
+	btnResumirAmostragens	: TButton;
+	
+	pnlCentral		: TPanel;
+	pnlBarraStatus	: TPanel;
+
+	lstArquivos		: TListBox;
+	lstEsq			: TListBox;
+	//lstDir			: TListBox;
+	lstDir_2			: TListBox;
+
+	//mmoDados		: TMemo;
+	mmR			: TMemo;
+	mmP			: TMemo;
+
+// ====================================
+// Apenas para lembrar que existe estes tipos de variaveis
+// ====================================
+//
+// arrLista 		: array of array of string;
+//
+//	rec	: Record
+//		tt : string;
+//	end;
+// ====================================
+
+procedure ExibirListaArquivos(Sender: TObject);
+var
+	i 		: Integer;
+	str 	: string;
+begin
+	str := DIRETORIO_AMOSTRAGENS;
+	// As duas linhas abaixo nao devem se separar ou trocar a ordem
+	stlListArq.Clear;
+	ListFiles(str, '*.*', stlListArq);
+	lstArquivos.Items.Clear;
+	lstArquivos.Items.Assign( stlListArq );
+	lblBarraStatus.Caption := 'Numero de arquivos: ' + IntToStr(lstArquivos.Items.Count) + '  '; 
+//     ShowMessage('Numero de arquivos: ' + IntToStr(lstArquivos.Items.Count));
+end;
+
+// ====================================
+// ==== RECURSIVIDADE ==== CUIDADO!!!
+// ====================================
+procedure QuebrarString(strString, strDelimitador : String; var stlResultado : TStringList);
+begin
+	if Pos(strDelimitador, strString) > 0 then
+	begin
+		stlResultado.Add(Copy(strString, 1, Pos(strDelimitador, strString)-1));
+		if Pos(strDelimitador, Copy(strString, Pos(strDelimitador, strString)+1, Length(strString))) > 0 then
+			QuebrarString(Copy(strString, Pos(strDelimitador, strString)+1, Length(strString)), strDelimitador, stlResultado) 
+		else
+		if Copy(strString, Pos(strDelimitador, strString)+1, Length(strString)) <> '' then
+			stlResultado.Add( Copy(strString, Pos(strDelimitador, strString)+1, Length(strString)) );
+	end;
+end;
+
+procedure ResumirAmostragens(Sender: TObject);
+var
+	i, j					: Integer;
+	stlPartes			: TStringList;
+	stlQuebraAux		: TStringList;
+	arrResposta			: Array of String;
+begin
+	stlPartes 		:= TStringList.Create;
+	stlQuebraAux 	:= TStringList.Create;
+
+	lstArquivos.Items.BeginUpdate;
+	lstEsq.Items.BeginUpdate;
+	lstDir_2.Items.BeginUpdate;
+
+	lstEsq.Items.Clear;
+	if lstArquivos.Items[0] <> '' then
+	begin 
+		QuebrarString(ExtractFileName(lstArquivos.Items[0]), '#', stlQuebraAux);
+		stlListArq.Clear;
+		ListFiles(DIRETORIO_AMOSTRAGENS, stlQuebraAux[0]+'#'+stlQuebraAux[1]+'#'+stlQuebraAux[2]+'#'+stlQuebraAux[3]+'#'+'*.*', stlListArq);
+		lstEsq.Items.Clear;
+		lstEsq.Items.Assign( stlListArq );
+		
+                lstDir_2.Items.Clear;
+		lstDir_2.Items.Add(stlQuebraAux[0]+ '#'+ stlQuebraAux[1]+ '#'+ stlQuebraAux[2]+ '#'+ stlQuebraAux[3]);
+	end;
+
+	for i := 0 to lstEsq.Items.Count - 1 do
+	begin
+		stlPartes.Clear;
+		stlPartes.LoadFromFile( lstEsq.Items[i] );
+		stlPartes.Delete(stlPartes.Count-1);   		// DESPREZANDO A FOTO
+		//mmoDados.Lines.Add( lstEsq.Items[i] );
+		//mmoDados.Lines.AddStrings(stlPartes);
+		if i = 0 then
+			SetLength(arrResposta, stlPartes.Count);	// CONFIGURANDO O TAMANHO DOS ARRAYS DE RESPOSTA
+		
+		for j := 0 to stlPartes.Count - 1 do  			// CADA LINHA DO ARQUIVO
+		begin
+			stlQuebraAux.Clear;
+			if (Pos('ANA', UpperCase(stlPartes[j])) > 0) or
+				(Pos('LONGITUDE', UpperCase(stlPartes[j])) > 0) or 
+				(Pos('LATITUDE', UpperCase(stlPartes[j])) > 0) then
+			begin
+				if i = 0 then  								// NUMERO DE ARQUIVOS TXT
+				begin
+					QuebrarString(stlPartes[j], ':', stlQuebraAux);
+					if i = lstEsq.Items.Count - 1 then
+						arrResposta[j] := stlQuebraAux[0]+ '#'+ stlQuebraAux[1]
+					else
+						arrResposta[j] := stlQuebraAux[0]+ '#'+ stlQuebraAux[1]+ '#';
+				end
+				else
+				begin
+					QuebrarString(stlPartes[j], ':', stlQuebraAux);
+					if i = lstEsq.Items.Count - 1 then
+						arrResposta[j] := arrResposta[j]+ stlQuebraAux[1]
+					else
+						arrResposta[j] := arrResposta[j]+ stlQuebraAux[1]+ '#'
+				end;
+			end;
+		end;
+	end;
+
+	for i := 0 to Length(arrResposta) - 1 do
+		if arrResposta[i] <> '' then
+			lstDir_2.Items.Add(arrResposta[i]);
+	
+	lstArquivos.Items.EndUpdate;
+	lstEsq.Items.EndUpdate;
+	lstDir_2.Items.EndUpdate;
+
+	stlPartes.Free;
+	stlQuebraAux.Free;
+end;
+
+procedure CriarComponentes;
+begin
+	frmPrincipal := TForm.Create(Self);
+	frmPrincipal.Caption := 'Importação de dados do coletor para o CA';
+	frmPrincipal.left := (Application.MainForm.ClientWidth div 2);
+	frmPrincipal.Position := poScreenCenter;
+	frmPrincipal.Height := 550;
+	frmPrincipal.Width := 600;
+
+	lblTitulo := TLabel.Create(frmPrincipal);
+	lblTitulo.Parent := frmPrincipal;
+	lblTitulo.AutoSize := False;
+	lblTitulo.Align := alTop;
+	lblTitulo.Alignment := taCenter;
+	lblTitulo.Layout := tlCenter;
+	lblTitulo.Font.Size := 10;
+	lblTitulo.Height := ALTURA_TITULO;
+	lblTitulo.caption := 'Sistema em Ação...';
+  	lblTitulo.Font.Style := lblTitulo.Font.Style + [fsItalic, fsBold];
+
+
+	// Criar um PANEL
+	pnlCentral := TPanel.Create(frmPrincipal);
+	pnlCentral.parent := frmPrincipal;
+	pnlCentral.Width := frmPrincipal.Width - (ESPACAMENTO * 2) - (TAMANHO_BORDA * 2);
+	pnlCentral.Left := ((frmPrincipal.Width - pnlCentral.Width) div 2) - (TAMANHO_BORDA * 2);
+	pnlCentral.Top := TAMANHO_BORDA + ALTURA_TITULO;
+	pnlCentral.Height := frmPrincipal.Height - TAMANHO_BORDA - BORDA_SUPERIOR - ALTURA_TITULO - TAMANHO_BORDA - ALTURA_BARRA_STATUS - (ESPACAMENTO*3);
+
+	// Criar um PANEL BARRA DE STATUS
+	pnlBarraStatus := TPanel.Create(frmPrincipal);
+	pnlBarraStatus.parent := frmPrincipal;
+	pnlBarraStatus.Height := ALTURA_BARRA_STATUS;
+// 	pnlBarraStatus.Align := alBottom;
+	pnlBarraStatus.Top := pnlCentral.Height + pnlCentral.Top + ESPACAMENTO - TAMANHO_BORDA;
+	pnlBarraStatus.Width := frmPrincipal.Width - (ESPACAMENTO * 2) - (TAMANHO_BORDA * 2);
+	pnlBarraStatus.Left := ((frmPrincipal.Width - pnlCentral.Width) div 2) - (TAMANHO_BORDA * 2);
+
+	lblBarraStatus := TLabel.Create(frmPrincipal);
+	lblBarraStatus.Parent := pnlBarraStatus;
+	lblBarraStatus.Align := alClient;
+	lblBarraStatus.caption := 'Aguardando ação...  ';
+	lblBarraStatus.Font.Name := 'Arial';
+	lblBarraStatus.Layout := tlCenter;
+	lblBarraStatus.Font.Size := 8;
+  	lblBarraStatus.Font.Style := lblBarraStatus.Font.Style + [fsItalic];
+	lblBarraStatus.Alignment := taRightJustify;
+
+
+	// Um BOTAO para fazer a lista de todos os arquivos disponiveis no diretorio
+	btnListarArquivos := TButton.Create(frmPrincipal);
+	btnListarArquivos.Parent := pnlCentral;
+	btnListarArquivos.width := 150;
+	btnListarArquivos.height := 30;
+	btnListarArquivos.left := pnlCentral.width - TAMANHO_BORDA - btnListarArquivos.width;
+	btnListarArquivos.top := ESPACAMENTO;
+	btnListarArquivos.visible := True;
+	btnListarArquivos.caption := 'Carregar Arquivos';
+//	btnListarArquivos.enabled := not (UpperCase(l.Caption) = 'D'); 
+	btnListarArquivos.OnClick := @ExibirListaArquivos;
+
+	lstArquivos := TListBox.Create(pnlCentral);
+	lstArquivos.Parent := pnlCentral;
+//	lstArquivos.Lines.LoadFromFile(AMOSTRAGEM_ARQUIVO);
+	lstArquivos.Left := ESPACAMENTO;
+	lstArquivos.Top := ESPACAMENTO;
+	lstArquivos.Height := (pnlCentral.height div 2) - ALTURA_BARRA_TITULO - btnListarArquivos.height - ESPACAMENTO;
+	lstArquivos.Width := pnlCentral.width - btnListarArquivos.Width - (ESPACAMENTO * 2) - TAMANHO_BORDA;
+
+	// BOTAO para separacao das amostragens
+	btnResumirAmostragens := TButton.Create(frmPrincipal);
+	btnResumirAmostragens.Parent := pnlCentral;
+	btnResumirAmostragens.width := 150;
+	btnResumirAmostragens.height := 30;
+	btnResumirAmostragens.left := pnlCentral.width - TAMANHO_BORDA - btnListarArquivos.width;
+	btnResumirAmostragens.top := (ESPACAMENTO * 2) + btnListarArquivos.Height;
+	btnResumirAmostragens.visible := True;
+	btnResumirAmostragens.caption := 'Listar Amostragens';
+	btnResumirAmostragens.OnClick := @ResumirAmostragens;
+	
+	lstEsq := TListBox.Create(pnlCentral);
+	lstEsq.Parent := pnlCentral;
+	lstEsq.Left := ESPACAMENTO;
+	lstEsq.Top := ESPACAMENTO + lstArquivos.Top + lstArquivos.Height;
+	lstEsq.Height := pnlCentral.height - ESPACAMENTO - lstEsq.Top  - ALTURA_MEMO_DADOS;
+	//lstEsq.Width := (pnlCentral.Width div 2) - ESPACAMENTO;
+	lstEsq.Width := lstArquivos.Width;
+
+	lstDir_2 := TListBox.Create(pnlCentral);
+	lstDir_2.Parent := pnlCentral;
+	lstDir_2.Left := ESPACAMENTO;
+	lstDir_2.Top := (ESPACAMENTO * 3) + lstArquivos.Height + lstEsq.Height;
+	lstDir_2.Height := ALTURA_MEMO_DADOS - ESPACAMENTO;
+	//lstDir_2.Width := (pnlCentral.Width div 2) - ESPACAMENTO;
+	lstDir_2.Width := lstArquivos.Width;
+end;
+
+begin
+	CriarComponentes;
+        if stlListArq = nil then
+           ShowMessage('Nao instanciado')
+        else
+        begin
+           ExibirListaArquivos(nil);
+           ResumirAmostragens(nil);
+        end;
+        
+	frmPrincipal.ShowModal;
+	frmPrincipal.Free;
+end.

@@ -1,0 +1,15 @@
+Latitude:37.422005
+Longitude:-122.084095
+
+
+
+ANA1_C:B_adriano
+ANA2_C:B_nova
+ANA3_N:B_1
+ANA4_N:B_1
+ANA5_N:B_1
+ANA6_N:B_1
+ANA7_C:B_MAHANARVA_FIMBRIOLATA
+ANA8_C:B_BATKOA
+ANA9_C:B_teste
+Foto:

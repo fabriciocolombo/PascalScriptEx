@@ -8,11 +8,13 @@
   resources were bound to the produced executable.
 */
 
-#define PSResources_sEditorTitleRunning 64960
-#define PSResources_sEditorTitlePaused 64961
-#define PSResources_sEditorTitleStopped 64962
-#define PSResources_sFileNotSaved 64963
-#define PSResources_sEmptyProgram 64964
+#define PSResources_sEditorTitle 64960
+#define PSResources_sEditorTitleRunning 64961
+#define PSResources_sEditorTitlePaused 64962
+#define PSResources_sEditorTitleStopped 64963
+#define PSResources_sFileNotSaved 64964
+#define PSResources_sEmptyProgram 64965
+#define Frm_ConfirmReplaceDialog_SAskReplaceText 64966
 #define SynEditStrConst_SYNS_FriendlyAttrReservedWord 64976
 #define SynEditStrConst_SYNS_FriendlyAttrSpace 64977
 #define SynEditStrConst_SYNS_FriendlyAttrString 64978
@@ -28,7 +30,7 @@
 #define PSResources_sBeginCompile 64988
 #define PSResources_sSuccessfullyExecuted 64989
 #define PSResources_sRuntimeError 64990
-#define PSResources_sEditorTitle 64991
+#define PSResources_sTextNotFound 64991
 #define Data_DBConsts_SProviderExecuteNotSupported 64992
 #define Data_DBConsts_SDataSetUnidirectional 64993
 #define Data_DBConsts_SUnassignedVar 64994
@@ -575,11 +577,13 @@
 #define System_SysConst_SDivByZero 65535
 STRINGTABLE
 BEGIN
+	PSResources_sEditorTitle,	L"Editor"
 	PSResources_sEditorTitleRunning,	L"Editor - Running"
 	PSResources_sEditorTitlePaused,	L"Editor - Paused"
 	PSResources_sEditorTitleStopped,	L"Editor - Stopped"
 	PSResources_sFileNotSaved,	L"File has not been saved, save now?"
 	PSResources_sEmptyProgram,	L"Program myprogram;\r\n\r\nbegin\r\nend."
+	Frm_ConfirmReplaceDialog_SAskReplaceText,	L"Replace this occurence of \"%s\"?"
 	SynEditStrConst_SYNS_FriendlyAttrReservedWord,	L"Reserved Word"
 	SynEditStrConst_SYNS_FriendlyAttrSpace,	L"Space"
 	SynEditStrConst_SYNS_FriendlyAttrString,	L"String"
@@ -595,7 +599,7 @@ BEGIN
 	PSResources_sBeginCompile,	L"Compiling"
 	PSResources_sSuccessfullyExecuted,	L"Succesfully executed"
 	PSResources_sRuntimeError,	L"[Runtime error] %s(%d:%d), bytecode(%d:%d): %s"
-	PSResources_sEditorTitle,	L"Editor"
+	PSResources_sTextNotFound,	L"Text not found"
 	Data_DBConsts_SProviderExecuteNotSupported,	L"Execute not supported"
 	Data_DBConsts_SDataSetUnidirectional,	L"Operation not allowed on a unidirectional dataset"
 	Data_DBConsts_SUnassignedVar,	L"Unassigned variant value"
@@ -1146,6 +1150,9 @@ END
 /* c:\program files (x86)\embarcadero\rad studio\9.0\lib\Win32\release\Buttons.res */
 /* C:\Desenvolvimento\OpenSource\Delphi\SynEdit\Source\SynEdit.res */
 /* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\src\Frm_GotoLine.dfm */
+/* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\src\Frm_SearchDialog.DFM */
+/* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\src\Frm_ReplaceDialog.DFM */
+/* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\src\Frm_ConfirmReplaceDialog.DFM */
 /* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\src\FrameEditor.dfm */
 /* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\demo\Demo.RES */
 /* C:\Desenvolvimento\OpenSource\fabricio\PascalScriptEx\demo\Demo.drf */

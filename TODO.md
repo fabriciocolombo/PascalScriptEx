@@ -1,0 +1,3 @@
+ - Reuse plugins from https://github.com/martijnlaan/Ps.git
+ - Remove from plugins standart functions already registereds in uPSCompiler.DefineStandardProcedures
+ - Add Watch variables!?

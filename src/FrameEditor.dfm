@@ -72,6 +72,7 @@ object Frm_Editor: TFrm_Editor
     OnDropFiles = EditorDropFiles
     OnGutterClick = EditorGutterClick
     OnGutterPaint = EditorGutterPaint
+    OnReplaceText = EditorReplaceText
     OnSpecialLineColors = EditorSpecialLineColors
     OnStatusChange = EditorStatusChange
     FontSmoothing = fsmNone
@@ -256,17 +257,20 @@ object Frm_Editor: TFrm_Editor
     object acFind: TAction
       Category = 'Search'
       Caption = '&Find'
-      Visible = False
+      ShortCut = 16454
+      OnExecute = acFindExecute
     end
     object acReplace: TAction
       Category = 'Search'
       Caption = '&Replace'
-      Visible = False
+      ShortCut = 16466
+      OnExecute = acReplaceExecute
     end
     object acFindNext: TAction
       Category = 'Search'
       Caption = 'Find &Next'
-      Visible = False
+      ShortCut = 114
+      OnExecute = acFindNextExecute
     end
     object acGoToLine: TAction
       Category = 'Search'
@@ -339,5 +343,13 @@ object Frm_Editor: TFrm_Editor
     OnAfterCodeCompletion = SynCompletionProposalAfterCodeCompletion
     Left = 136
     Top = 152
+  end
+  object SynEditSearch: TSynEditSearch
+    Left = 136
+    Top = 200
+  end
+  object SynEditRegexSearch: TSynEditRegexSearch
+    Left = 224
+    Top = 200
   end
 end

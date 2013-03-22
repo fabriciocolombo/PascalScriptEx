@@ -7,7 +7,8 @@ uses
   Graphics, Controls, Forms, Dialogs, Menus, SynEdit,
   StdCtrls, ExtCtrls, SynEditHighlighter, SynHighlighterPas,
   uPSComponent, uPSCompiler, ActnList, ComCtrls, SynEditKeyCmds,
-  SynCompletionProposal, uPSUtils, PSResources, uPSDebugger, uPSRunTime;
+  SynCompletionProposal, uPSUtils, PSResources, uPSDebugger, uPSRunTime,
+  SynEditMiscClasses, SynEditSearch, SynEditRegexSearch, SynEditTypes, SearchUtils;
 
 type
   TFrm_Editor = class(TForm)
@@ -67,6 +68,8 @@ type
     acRun: TAction;
     StatusBar: TStatusBar;
     SynCompletionProposal: TSynCompletionProposal;
+    SynEditSearch: TSynEditSearch;
+    SynEditRegexSearch: TSynEditRegexSearch;
     procedure PSScript_Compile(Sender: TPSScript);
     procedure PSScript_Execute(Sender: TPSScript);
     procedure acSaveExecute(Sender: TObject);
@@ -95,10 +98,16 @@ type
     procedure acStepOverExecute(Sender: TObject);
     procedure acStepIntoExecute(Sender: TObject);
     procedure acPauseExecute(Sender: TObject);
+    procedure acFindExecute(Sender: TObject);
+    procedure acFindNextExecute(Sender: TObject);
+    procedure acReplaceExecute(Sender: TObject);
+    procedure EditorReplaceText(Sender: TObject; const ASearch,
+      AReplace: string; Line, Column: Integer; var Action: TSynReplaceAction);
   private
     FActiveFile: TFileName;
     FActiveLine: LongInt;
     FResume: Boolean;
+    FSearchOptions: TSearchOptions;
 
     function Compile: Boolean;
     function SaveCheck: Boolean;
@@ -110,11 +119,13 @@ type
     procedure LoadAutoComplete;
 
     procedure LoadFromFile(AFileName: string);
+
+    procedure ExecuteSearch(AReplace: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
 
     property ActiveFile: TFileName read FActiveFile;
-
   end;
 
 var
@@ -124,7 +135,8 @@ implementation
 
 {$R *.dfm}
 
-uses RegisterPlugins, Frm_GotoLine, StrUtils;
+uses RegisterPlugins, Frm_GotoLine, StrUtils, Frm_SearchDialog,
+  Frm_ReplaceDialog, Frm_ConfirmReplaceDialog;
 
 { TFrame1 }
 
@@ -141,6 +153,38 @@ begin
   begin
     Close;
   end;
+end;
+
+procedure TFrm_Editor.acFindExecute(Sender: TObject);
+var
+  vSearch: TFrm_SearchDialog;
+begin
+  vSearch := TFrm_SearchDialog.Create(nil);
+  try
+    if Editor.SelAvail and (Editor.BlockBegin.Line = Editor.BlockEnd.Line) then
+      FSearchOptions.SearchText := Editor.SelText
+    else
+      FSearchOptions.SearchText := Editor.GetWordAtRowCol(Editor.CaretXY);
+
+    if vSearch.Execute(FSearchOptions) then
+    begin
+      ExecuteSearch(False);
+    end;
+  finally
+    vSearch.Free;
+  end;
+end;
+
+procedure TFrm_Editor.acFindNextExecute(Sender: TObject);
+begin
+  FSearchOptions.SearchFromCursor := True;
+
+  if FSearchOptions.SearchText <> EmptyStr then
+  begin
+    ExecuteSearch(False);
+  end
+  else
+    acFind.Execute;
 end;
 
 procedure TFrm_Editor.acGoToLineExecute(Sender: TObject);
@@ -182,6 +226,21 @@ begin
   begin
     PSScriptDebugger.Pause;
 //    PSScriptDebugger.StepInto;
+  end;
+end;
+
+procedure TFrm_Editor.acReplaceExecute(Sender: TObject);
+var
+  vSearch: TFrm_ReplaceDialog;
+begin
+  vSearch := TFrm_ReplaceDialog.Create(nil);
+  try
+    if vSearch.Execute(FSearchOptions) then
+    begin
+      ExecuteSearch(True);
+    end;
+  finally
+    vSearch.Free;
   end;
 end;
 
@@ -363,6 +422,7 @@ end;
 constructor TFrm_Editor.Create(AOwner: TComponent);
 begin
   inherited;
+  FSearchOptions := TSearchOptions.Create;
 
   Caption := sEditorTitle;
 
@@ -373,6 +433,12 @@ begin
   acCompile.Execute;
 
   UpdateStatusBar;
+end;
+
+destructor TFrm_Editor.Destroy;
+begin
+  FSearchOptions.Free;
+  inherited;
 end;
 
 procedure TFrm_Editor.EditorDropFiles(Sender: TObject; X, Y: Integer; AFiles: TStrings);
@@ -411,6 +477,40 @@ begin
   end;
 end;
 
+procedure TFrm_Editor.EditorReplaceText(Sender: TObject; const ASearch,
+  AReplace: string; Line, Column: Integer; var Action: TSynReplaceAction);
+var
+  APos: TPoint;
+  EditRect: TRect;
+  vConfirmDialog: TFrm_ConfirmReplaceDialog;
+begin
+  vConfirmDialog := TFrm_ConfirmReplaceDialog.Create(nil);
+  try
+    if ASearch = AReplace then
+      Action := raSkip
+    else begin
+      APos := Editor.ClientToScreen(
+        Editor.RowColumnToPixels(
+        Editor.BufferToDisplayPos(
+          BufferCoord(Column, Line) ) ) );
+
+      EditRect := ClientRect;
+      EditRect.TopLeft := ClientToScreen(EditRect.TopLeft);
+      EditRect.BottomRight := ClientToScreen(EditRect.BottomRight);
+
+      vConfirmDialog.PrepareShow(EditRect, APos.X, APos.Y, APos.Y + Editor.LineHeight, ASearch);
+      case vConfirmDialog.ShowModal of
+        mrYes: Action := raReplace;
+        mrYesToAll: Action := raReplaceAll;
+        mrNo: Action := raSkip;
+        else Action := raCancel;
+      end;
+    end;
+  finally
+    vConfirmDialog.Free;
+  end;
+end;
+
 procedure TFrm_Editor.EditorSpecialLineColors(Sender: TObject; Line: Integer;
   var Special: Boolean; var FG, BG: TColor);
 begin
@@ -440,6 +540,37 @@ end;
 procedure TFrm_Editor.EditorStatusChange(Sender: TObject; Changes: TSynStatusChanges);
 begin
   UpdateStatusBar;
+end;
+
+procedure TFrm_Editor.ExecuteSearch(AReplace: Boolean);
+var
+  vOptions: TSynSearchOptions;
+  vReplaceText: string;
+begin
+  if FSearchOptions.SearchRegularExpression then
+    Editor.SearchEngine := SynEditRegexSearch
+  else
+    Editor.SearchEngine := SynEditSearch;
+
+  vOptions := FSearchOptions.SynEditOptions;
+
+  vReplaceText := EmptyStr;
+  if (ssoReplace in vOptions) then
+  begin
+    vReplaceText := FSearchOptions.ReplaceText;
+  end;
+
+  if Editor.SearchReplace(FSearchOptions.SearchText, vReplaceText, vOptions) = 0 then
+  begin
+    MessageBeep(MB_ICONASTERISK);
+    Statusbar.SimpleText := sTextNotFound;
+    if FSearchOptions.SearchBackwards then
+      Editor.BlockEnd := Editor.BlockBegin
+    else
+      Editor.BlockBegin := Editor.BlockEnd;
+
+    Editor.CaretXY := Editor.BlockBegin;
+  end;
 end;
 
 procedure TFrm_Editor.LoadAutoComplete;
