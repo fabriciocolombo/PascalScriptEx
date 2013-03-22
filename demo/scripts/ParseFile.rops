@@ -1,27 +1,28 @@
 program Test;
 
 const
-        ALTURA_BARRA_TITULO 	= 20;
-        ESPACAMENTO 		= 10;
-        TAMANHO_BORDA 		= 4;
-        AMOSTRAGEM_ARQUIVO 	= 'Resources\Plantio_13_2_20137_28_57.txt';
+  ALTURA_BARRA_TITULO 	= 20;
+  ESPACAMENTO 		= 10;
+  TAMANHO_BORDA 		= 4;
+  AMOSTRAGEM_ARQUIVO 	= 'Resources\Plantio_13_2_20137_28_57.txt';
   
 var
-	t 			: TForm;
-	l 			: TLabel;
-	b 			: TButton;
- 	btnListarArquivos	: TButton;
-	btnCarregarArquivo  : TButton;
-	p 			: TPanel;
-	mmO 			: TMemo;
-	files: TListBox;
-	mmR 			: TMemo;
+  t: TForm;
+  l: TLabel;
+  b: TButton;
+  btnListarArquivos:TButton;
+  btnCarregarArquivo: TButton;
+  p: TPanel;
+  mmO: TMemo;
+  files: TListBox;
+  mmR: TMemo;
 
 procedure ExibirListaArquivos(Sender: TObject);
 var
    str : string;
    strArquivo : string;
 begin
+
      str := ExtractFilePath(AMOSTRAGEM_ARQUIVO);
      strArquivo := StringReplace(AMOSTRAGEM_ARQUIVO, str, '---> ', [rfReplaceAll]);
 

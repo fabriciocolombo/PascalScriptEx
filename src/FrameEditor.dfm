@@ -13,6 +13,7 @@ object Frm_Editor: TFrm_Editor
   Menu = MainMenu1
   OldCreateOrder = True
   Position = poScreenCenter
+  OnCloseQuery = FormCloseQuery
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
@@ -66,7 +67,8 @@ object Frm_Editor: TFrm_Editor
       '    ShowMessage('#39'Hello Pascal Script'#39');'
       '  end;'
       'end.')
-    Options = [eoAutoIndent, eoDragDropEditing, eoDropFiles, eoEnhanceEndKey, eoGroupUndo, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
+    Options = [eoAutoIndent, eoDragDropEditing, eoDropFiles, eoEnhanceEndKey, eoGroupUndo, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTabsToSpaces, eoTrimTrailingSpaces]
+    TabWidth = 2
     WantTabs = True
     OnDropFiles = EditorDropFiles
     OnGutterClick = EditorGutterClick
@@ -75,6 +77,7 @@ object Frm_Editor: TFrm_Editor
     OnSpecialLineColors = EditorSpecialLineColors
     OnStatusChange = EditorStatusChange
     FontSmoothing = fsmNone
+    ExplicitTop = -6
   end
   object StatusBar: TStatusBar
     Left = 0

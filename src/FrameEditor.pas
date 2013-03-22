@@ -110,6 +110,7 @@ type
     procedure EditorReplaceText(Sender: TObject; const ASearch,
       AReplace: string; Line, Column: Integer; var Action: TSynReplaceAction);
     procedure MessagesDblClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     FActiveFile: TFileName;
     FActiveLine: LongInt;
@@ -607,6 +608,11 @@ begin
   end;
 end;
 
+procedure TFrm_Editor.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  CanClose := SaveCheck;
+end;
+
 procedure TFrm_Editor.LoadAutoComplete;
 const
   sFunctionStyle  = '\COLOR{clNavy}function \COLOR{clBlack}\STYLE{+B}%s\STYLE{-B}%s;';
@@ -678,7 +684,6 @@ end;
 procedure TFrm_Editor.MessagesDblClick(Sender: TObject);
 var
   vMessageCoord: TMessageCoord;
-  a: Integer;
 begin
   if Messages.ItemIndex >= 0 then
   begin
