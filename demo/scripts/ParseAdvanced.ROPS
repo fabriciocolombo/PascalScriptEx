@@ -30,6 +30,7 @@ var
 	//mmoDados		: TMemo;
 	mmR			: TMemo;
 	mmP			: TMemo;
+        stlListArq: TStringList;
 
 // ====================================
 // Apenas para lembrar que existe estes tipos de variaveis
@@ -151,6 +152,8 @@ end;
 
 procedure CriarComponentes;
 begin
+        stlListArq := TStringList.Create;
+          
 	frmPrincipal := TForm.Create(Self);
 	frmPrincipal.Caption := 'Importação de dados do coletor para o CA';
 	frmPrincipal.left := (Application.MainForm.ClientWidth div 2);
@@ -258,4 +261,6 @@ begin
         
 	frmPrincipal.ShowModal;
 	frmPrincipal.Free;
+ 
+        stlListArq.Free;
 end.

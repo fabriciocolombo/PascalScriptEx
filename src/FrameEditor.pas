@@ -637,6 +637,8 @@ begin
   Editor.Lines.LoadFromFile(vRelativePath + ExtractFileName(AFileName));
   Editor.Modified := False;
   FActiveFile := AFileName;
+
+  UpdateStatusBar;
 end;
 
 procedure TFrm_Editor.PSScript_Compile(Sender: TPSScript);

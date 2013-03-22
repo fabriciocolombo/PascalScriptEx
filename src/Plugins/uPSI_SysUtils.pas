@@ -25,29 +25,16 @@ type
     procedure CompileImport1(CompExec: TPSScript); override;
     procedure ExecImport1(CompExec: TPSScript; const ri: TPSRuntimeClassImporter); override;
   end;
- 
- 
+
+
 { compile-time registration functions }
-procedure SIRegister_TMultiReadExclusiveWriteSynchronizer(CL: TPSPascalCompiler);
-procedure SIRegister_TSimpleRWSync(CL: TPSPascalCompiler);
-procedure SIRegister_IReadWriteSync(CL: TPSPascalCompiler);
-procedure SIRegister_EAbstractError(CL: TPSPascalCompiler);
-procedure SIRegister_EInOutError(CL: TPSPascalCompiler);
-procedure SIRegister_EHeapException(CL: TPSPascalCompiler);
 procedure SIRegister_Exception(CL: TPSPascalCompiler);
-procedure SIRegister_TLanguages(CL: TPSPascalCompiler);
 procedure SIRegister_SysUtils(CL: TPSPascalCompiler);
 
 { run-time registration functions }
-procedure RIRegister_TMultiReadExclusiveWriteSynchronizer(CL: TPSRuntimeClassImporter);
-procedure RIRegister_TSimpleRWSync(CL: TPSRuntimeClassImporter);
 procedure RIRegister_SysUtils_Routines(S: TPSExec);
-procedure RIRegister_EOSError(CL: TPSRuntimeClassImporter);
-procedure RIRegister_EAbstractError(CL: TPSRuntimeClassImporter);
-procedure RIRegister_EInOutError(CL: TPSRuntimeClassImporter);
-procedure RIRegister_EHeapException(CL: TPSRuntimeClassImporter);
 procedure RIRegister_Exception(CL: TPSRuntimeClassImporter);
-procedure RIRegister_TLanguages(CL: TPSRuntimeClassImporter);
+
 procedure RIRegister_SysUtils(CL: TPSRuntimeClassImporter);
 
 procedure Register;
@@ -60,87 +47,6 @@ implementation
 procedure Register;
 begin
   RegisterComponents('Pascal Script', [TPSImport_SysUtils]);
-end;
-
-(* === compile-time registration functions === *)
-(*----------------------------------------------------------------------------*)
-procedure SIRegister_TMultiReadExclusiveWriteSynchronizer(CL: TPSPascalCompiler);
-begin
-  //with RegClassS(CL,'TInterfacedObject', 'TMultiReadExclusiveWriteSynchronizer') do
-  with CL.AddClassN(CL.FindClass('TInterfacedObject'),'TMultiReadExclusiveWriteSynchronizer') do
-  begin
-    RegisterMethod('Constructor Create');
-    RegisterMethod('Procedure BeginRead');
-    RegisterMethod('Procedure EndRead');
-    RegisterMethod('Function BeginWrite : Boolean');
-    RegisterMethod('Procedure EndWrite');
-    RegisterProperty('RevisionLevel', 'Cardinal', iptr);
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure SIRegister_TSimpleRWSync(CL: TPSPascalCompiler);
-begin
-  //with RegClassS(CL,'TInterfacedObject', 'TSimpleRWSync') do
-  with CL.AddClassN(CL.FindClass('TInterfacedObject'),'TSimpleRWSync') do
-  begin
-    RegisterMethod('Constructor Create');
-    RegisterMethod('Procedure BeginRead');
-    RegisterMethod('Procedure EndRead');
-    RegisterMethod('Function BeginWrite : Boolean');
-    RegisterMethod('Procedure EndWrite');
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure SIRegister_IReadWriteSync(CL: TPSPascalCompiler);
-begin
-  //with RegInterfaceS(CL,'IUNKNOWN', 'IReadWriteSync') do
-  with CL.AddInterface(CL.FindInterface('IUNKNOWN'),IReadWriteSync, 'IReadWriteSync') do
-  begin
-    RegisterMethod('Procedure BeginRead', cdRegister);
-    RegisterMethod('Procedure EndRead', cdRegister);
-    RegisterMethod('Function BeginWrite : Boolean', cdRegister);
-    RegisterMethod('Procedure EndWrite', cdRegister);
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-(*----------------------------------------------------------------------------*)
-procedure SIRegister_EAbstractError(CL: TPSPascalCompiler);
-begin
-  //with RegClassS(CL,'Exception', 'EAbstractError') do
-  with CL.AddClassN(CL.FindClass('Exception'),'EAbstractError') do
-  begin
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure SIRegister_ECodesetConversion(CL: TPSPascalCompiler);
-begin
-  //with RegClassS(CL,'Exception', 'ECodesetConversion') do
-  with CL.AddClassN(CL.FindClass('Exception'),'ECodesetConversion') do
-  begin
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure SIRegister_EInOutError(CL: TPSPascalCompiler);
-begin
-  //with RegClassS(CL,'Exception', 'EInOutError') do
-  with CL.AddClassN(CL.FindClass('Exception'),'EInOutError') do
-  begin
-    RegisterProperty('ErrorCode', 'Integer', iptrw);
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure SIRegister_EHeapException(CL: TPSPascalCompiler);
-begin
-  //with RegClassS(CL,'Exception', 'EHeapException') do
-  with CL.AddClassN(CL.FindClass('Exception'),'EHeapException') do
-  begin
-  end;
 end;
 
 (*----------------------------------------------------------------------------*)
@@ -163,24 +69,6 @@ begin
     RegisterMethod('Constructor CreateResStrFmtHelp( Ident : Integer; const Args : array of const; AHelpContext : Integer)');
     RegisterProperty('HelpContext', 'Integer', iptrw);
     RegisterProperty('Message', 'string', iptrw);
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure SIRegister_TLanguages(CL: TPSPascalCompiler);
-begin
-  //with RegClassS(CL,'TOBJECT', 'TLanguages') do
-  with CL.AddClassN(CL.FindClass('TOBJECT'),'TLanguages') do
-  begin
-    RegisterMethod('Constructor Create');
-    RegisterMethod('Function IndexOf( ID : LCID) : Integer');
-    RegisterProperty('Count', 'Integer', iptr);
-    RegisterProperty('Name', 'string Integer', iptr);
-    RegisterProperty('NameFromLocaleID', 'string LCID', iptr);
-    RegisterProperty('NameFromLCID', 'string string', iptr);
-    RegisterProperty('ID', 'string Integer', iptr);
-    RegisterProperty('LocaleID', 'LCID Integer', iptr);
-    RegisterProperty('Ext', 'string Integer', iptr);
   end;
 end;
 
@@ -231,41 +119,10 @@ begin
    +'g; TimeAMString : string; TimePMString : string; ShortTimeFormat : string;'
    +' LongTimeFormat : string; TwoDigitYearCenturyWindow : Word; end');
 
-  SIRegister_TLanguages(CL);
   CL.AddTypeS('TEraRange', 'record StartDate : Integer; EndDate : Integer; end');
   SIRegister_Exception(CL);
   //CL.AddTypeS('ExceptClass', 'class of Exception');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EAbort');
-  SIRegister_EHeapException(CL);
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EOutOfMemory');
-  SIRegister_EInOutError(CL);
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EIntError');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EDivByZero');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'ERangeError');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EIntOverflow');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EMathError');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EInvalidOp');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EZeroDivide');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EOverflow');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EUnderflow');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EInvalidPointer');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EInvalidCast');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EConvertError');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EAccessViolation');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EPrivilege');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EControlC');
-  SIRegister_ECodesetConversion(CL);
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EVariantError');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EPropReadOnly');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EPropWriteOnly');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EAssertionFailed');
-  SIRegister_EAbstractError(CL);
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EIntfCastError');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EInvalidContainer');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EInvalidInsert');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'EPackageError');
-  CL.AddClassN(CL.FindClass('TOBJECT'),'ESafecallException');
-  CL.AddTypeS('TSignalState', '( ssNotHooked, ssHooked, ssOverridden )');
+
  CL.AddConstantN('MAX_PATH','LongInt').SetInt( 4095);
  CL.AddDelphiFunction('Function CheckWin32Version( AMajor : Integer; AMinor : Integer) : Boolean');
  CL.AddDelphiFunction('Function GetFileVersion( const AFileName : string) : Cardinal');
@@ -274,14 +131,9 @@ begin
  CL.AddConstantN('DriveDelim','String').SetString( ':');
  CL.AddConstantN('PathSep','String').SetString( ';');
  CL.AddTypeS('TTextLineBreakStyle', '(tlbsLF, tlbsCRLF)');
- CL.AddDelphiFunction('Function Languages : TLanguages');
- CL.AddDelphiFunction('Function UpperCase( const S : string) : string');
- CL.AddDelphiFunction('Function LowerCase( const S : string) : string');
  CL.AddDelphiFunction('Function CompareStr( const S1, S2 : string) : Integer');
  CL.AddDelphiFunction('Function CompareText( const S1, S2 : string) : Integer');
  CL.AddDelphiFunction('Function SameText( const S1, S2 : string) : Boolean');
- CL.AddDelphiFunction('Function AnsiUpperCase( const S : string) : string');
- CL.AddDelphiFunction('Function AnsiLowerCase( const S : string) : string');
  CL.AddDelphiFunction('Function AnsiCompareStr( const S1, S2 : string) : Integer');
  CL.AddDelphiFunction('Function AnsiSameStr( const S1, S2 : string) : Boolean');
  CL.AddDelphiFunction('Function AnsiCompareText( const S1, S2 : string) : Integer');
@@ -300,27 +152,14 @@ begin
  CL.AddDelphiFunction('Function WideSameStr( const S1, S2 : WideString) : Boolean');
  CL.AddDelphiFunction('Function WideCompareText( const S1, S2 : WideString) : Integer');
  CL.AddDelphiFunction('Function WideSameText( const S1, S2 : WideString) : Boolean');
- CL.AddDelphiFunction('Function Trim( const S : string) : string');
- CL.AddDelphiFunction('Function TrimWide( const S : WideString) : WideString');
- CL.AddDelphiFunction('Function TrimLeft( const S : string) : string');
- CL.AddDelphiFunction('Function TrimLeftWide( const S : WideString) : WideString');
- CL.AddDelphiFunction('Function TrimRight( const S : string) : string');
- CL.AddDelphiFunction('Function TrimRightWide( const S : WideString) : WideString');
  CL.AddDelphiFunction('Function QuotedStr( const S : string) : string');
  CL.AddDelphiFunction('Function AnsiQuotedStr( const S : string; Quote : Char) : string');
  CL.AddDelphiFunction('Function AnsiExtractQuotedStr( var Src : PChar; Quote : Char) : string');
  CL.AddDelphiFunction('Function AnsiDequotedStr( const S : string; AQuote : Char) : string');
  CL.AddDelphiFunction('Function AdjustLineBreaks( const S : string; Style : TTextLineBreakStyle) : string');
  CL.AddDelphiFunction('Function IsValidIdent( const Ident : string) : Boolean');
- CL.AddDelphiFunction('Function IntToStr( Value : Integer) : string');
- CL.AddDelphiFunction('Function Int64ToStr( Value : Int64) : string');
  CL.AddDelphiFunction('Function IntToHex( Value : Integer; Digits : Integer) : string');
- CL.AddDelphiFunction('Function Int64ToHex( Value : Int64; Digits : Integer) : string');
- CL.AddDelphiFunction('Function StrToInt( const S : string) : Integer');
- CL.AddDelphiFunction('Function StrToIntDef( const S : string; Default : Integer) : Integer');
  CL.AddDelphiFunction('Function TryStrToInt( const S : string; out Value : Integer) : Boolean');
- CL.AddDelphiFunction('Function StrToInt64( const S : string) : Int64');
- CL.AddDelphiFunction('Function StrToInt64Def( const S : string; const Default : Int64) : Int64');
  CL.AddDelphiFunction('Function TryStrToInt64( const S : string; out Value : Int64) : Boolean');
  CL.AddConstantN('DefaultTrueBoolStr','String').SetString( 'True');
  CL.AddConstantN('DefaultFalseBoolStr','String').SetString( 'False');
@@ -332,7 +171,6 @@ begin
  CL.AddDelphiFunction('Function FmtLoadStr( Ident : Integer; const Args : array of const) : string');
  CL.AddDelphiFunction('Function FileOpen( const FileName : string; Mode : LongWord) : Integer');
  CL.AddDelphiFunction('Function FileCreate( const FileName : string) : Integer');
- CL.AddDelphiFunction('Function FileCreateWithRights( const FileName : string; Rights : Integer) : Integer');
  CL.AddDelphiFunction('Function FileSeek( Handle, Offset, Origin : Integer) : Integer');
  CL.AddDelphiFunction('Procedure FileClose( Handle : Integer)');
  CL.AddDelphiFunction('Function FileAge( const FileName : string) : Integer');
@@ -344,9 +182,6 @@ begin
  CL.AddDelphiFunction('Procedure FindClose( var F : TSearchRec)');
  CL.AddDelphiFunction('Function FileGetDate( Handle : Integer) : Integer');
  CL.AddDelphiFunction('Function FileSetDate( const FileName : string; Age : Integer) : Integer');
- CL.AddDelphiFunction('Function FileSetDateH( Handle : Integer; Age : Integer) : Integer');
- CL.AddDelphiFunction('Function FileGetAttr( const FileName : string) : Integer');
- CL.AddDelphiFunction('Function FileSetAttr( const FileName : string; Attr : Integer) : Integer');
  CL.AddDelphiFunction('Function FileIsReadOnly( const FileName : string) : Boolean');
  CL.AddDelphiFunction('Function FileSetReadOnly( const FileName : string; ReadOnly : Boolean) : Boolean');
  CL.AddDelphiFunction('Function DeleteFile( const FileName : string) : Boolean');
@@ -373,74 +208,23 @@ begin
  CL.AddDelphiFunction('Function SetCurrentDir( const Dir : string) : Boolean');
  CL.AddDelphiFunction('Function CreateDir( const Dir : string) : Boolean');
  CL.AddDelphiFunction('Function RemoveDir( const Dir : string) : Boolean');
- CL.AddDelphiFunction('Function StrLen( const Str : PChar) : Cardinal');
- CL.AddDelphiFunction('Function StrEnd( const Str : PChar) : PChar');
- CL.AddDelphiFunction('Function StrMove( Dest : PChar; const Source : PChar; Count : Cardinal) : PChar');
- CL.AddDelphiFunction('Function StrCopy( Dest : PChar; const Source : PChar) : PChar');
- CL.AddDelphiFunction('Function StrECopy( Dest : PChar; const Source : PChar) : PChar');
- CL.AddDelphiFunction('Function StrLCopy( Dest : PChar; const Source : PChar; MaxLen : Cardinal) : PChar');
- CL.AddDelphiFunction('Function StrPCopy( Dest : PChar; const Source : string) : PChar');
- CL.AddDelphiFunction('Function StrPLCopy( Dest : PChar; const Source : string; MaxLen : Cardinal) : PChar');
- CL.AddDelphiFunction('Function StrCat( Dest : PChar; const Source : PChar) : PChar');
- CL.AddDelphiFunction('Function StrLCat( Dest : PChar; const Source : PChar; MaxLen : Cardinal) : PChar');
- CL.AddDelphiFunction('Function StrComp( const Str1, Str2 : PChar) : Integer');
- CL.AddDelphiFunction('Function StrIComp( const Str1, Str2 : PChar) : Integer');
- CL.AddDelphiFunction('Function StrLComp( const Str1, Str2 : PChar; MaxLen : Cardinal) : Integer');
- CL.AddDelphiFunction('Function StrLIComp( const Str1, Str2 : PChar; MaxLen : Cardinal) : Integer');
- CL.AddDelphiFunction('Function StrScan( const Str : PChar; char : Char) : PChar');
- CL.AddDelphiFunction('Function StrRScan( const Str : PChar; char : Char) : PChar');
- CL.AddDelphiFunction('Function StrPos( const Str1, Str2 : PChar) : PChar');
- CL.AddDelphiFunction('Function StrUpper( Str : PChar) : PChar');
- CL.AddDelphiFunction('Function StrLower( Str : PChar) : PChar');
- CL.AddDelphiFunction('Function StrPas( const Str : PChar) : string');
- CL.AddDelphiFunction('Function StrAlloc( Size : Cardinal) : PChar');
- CL.AddDelphiFunction('Function StrBufSize( const Str : PChar) : Cardinal');
- CL.AddDelphiFunction('Function StrNew( const Str : PChar) : PChar');
- CL.AddDelphiFunction('Procedure StrDispose( Str : PChar)');
  CL.AddDelphiFunction('Function Format( const Format : string; const Args : array of const) : string');
- CL.AddDelphiFunction('Function FormatEx( const Format : string; const Args : array of const; const FormatSettings : TFormatSettings) : string');
- CL.AddDelphiFunction('Procedure FmtStr( var Result : string; const Format : string; const Args : array of const)');
- CL.AddDelphiFunction('Procedure FmtStrEx( var Result : string; const Format : string; const Args : array of const; const FormatSettings : TFormatSettings)');
- CL.AddDelphiFunction('Function StrFmt( Buffer, Format : PChar; const Args : array of const) : PChar');
- CL.AddDelphiFunction('Function StrFmtEx( Buffer, Format : PChar; const Args : array of const; const FormatSettings : TFormatSettings) : PChar');
- CL.AddDelphiFunction('Function StrLFmt( Buffer : PChar; MaxBufLen : Cardinal; Format : PChar; const Args : array of const) : PChar');
- CL.AddDelphiFunction('Function StrLFmtEx( Buffer : PChar; MaxBufLen : Cardinal; Format : PChar; const Args : array of const; const FormatSettings : TFormatSettings) : PChar');
- CL.AddDelphiFunction('Function WideFormat( const Format : WideString; const Args : array of const) : WideString');
- CL.AddDelphiFunction('Function WideFormatEx( const Format : WideString; const Args : array of const; const FormatSettings : TFormatSettings) : WideString');
- CL.AddDelphiFunction('Procedure WideFmtStr( var Result : WideString; const Format : WideString; const Args : array of const)');
- CL.AddDelphiFunction('Procedure WideFmtStrEx( var Result : WideString; const Format : WideString; const Args : array of const; const FormatSettings : TFormatSettings)');
- CL.AddDelphiFunction('Function FloatToStr( Value : Extended) : string');
- CL.AddDelphiFunction('Function FloatToStrEx( Value : Extended; const FormatSettings : TFormatSettings) : string');
  CL.AddDelphiFunction('Function CurrToStr( Value : Currency) : string');
- CL.AddDelphiFunction('Function CurrToStrEx( Value : Currency; const FormatSettings : TFormatSettings) : string');
  CL.AddConstantN('MinCurrency','Currency').SetExtended( - 922337203685477.5807);
  CL.AddConstantN('MaxCurrency','Currency').SetExtended( 922337203685477.5807);
  CL.AddDelphiFunction('Function FloatToCurr( const Value : Extended) : Currency');
  CL.AddDelphiFunction('Function TryFloatToCurr( const Value : Extended; out AResult : Currency) : Boolean');
  CL.AddDelphiFunction('Function FloatToStrF( Value : Extended; Format : TFloatFormat; Precision, Digits : Integer) : string');
- CL.AddDelphiFunction('Function FloatToStrFEx( Value : Extended; Format : TFloatFormat; Precision, Digits : Integer; const FormatSettings : TFormatSettings) : string');
  CL.AddDelphiFunction('Function CurrToStrF( Value : Currency; Format : TFloatFormat; Digits : Integer) : string');
- CL.AddDelphiFunction('Function CurrToStrFEx( Value : Currency; Format : TFloatFormat; Digits : Integer; const FormatSettings : TFormatSettings) : string');
  CL.AddDelphiFunction('Function FormatFloat( const Format : string; Value : Extended) : string');
- CL.AddDelphiFunction('Function FormatFloatEx( const Format : string; Value : Extended; const FormatSettings : TFormatSettings) : string');
  CL.AddDelphiFunction('Function FormatCurr( const Format : string; Value : Currency) : string');
- CL.AddDelphiFunction('Function FormatCurrEx( const Format : string; Value : Currency; const FormatSettings : TFormatSettings) : string');
- CL.AddDelphiFunction('Function StrToFloat( const S : string) : Extended');
- CL.AddDelphiFunction('Function StrToFloatEx( const S : string; const FormatSettings : TFormatSettings) : Extended');
  CL.AddDelphiFunction('Function StrToFloatDef( const S : string; const Default : Extended) : Extended');
- CL.AddDelphiFunction('Function StrToFloatDefEx( const S : string; const Default : Extended; const FormatSettings : TFormatSettings) : Extended');
  CL.AddDelphiFunction('Function TryStrToFloat( const S : string; out Value : Extended) : Boolean');
- CL.AddDelphiFunction('Function TryStrToFloatEx( const S : string; out Value : Extended; const FormatSettings : TFormatSettings) : Boolean');
  CL.AddDelphiFunction('Function TryStrToFloat( const S : string; out Value : Double) : Boolean');
- CL.AddDelphiFunction('Function TryStrToFloatEx( const S : string; out Value : Double; const FormatSettings : TFormatSettings) : Boolean');
  CL.AddDelphiFunction('Function TryStrToFloat( const S : string; out Value : Single) : Boolean');
- CL.AddDelphiFunction('Function TryStrToFloatEx( const S : string; out Value : Single; const FormatSettings : TFormatSettings) : Boolean');
  CL.AddDelphiFunction('Function StrToCurr( const S : string) : Currency');
- CL.AddDelphiFunction('Function StrToCurrEx( const S : string; const FormatSettings : TFormatSettings) : Currency');
  CL.AddDelphiFunction('Function StrToCurrDef( const S : string; const Default : Currency) : Currency');
- CL.AddDelphiFunction('Function StrToCurrDefEx( const S : string; const Default : Currency; const FormatSettings : TFormatSettings) : Currency');
  CL.AddDelphiFunction('Function TryStrToCurr( const S : string; out Value : Currency) : Boolean');
- CL.AddDelphiFunction('Function TryStrToCurrEx( const S : string; out Value : Currency; const FormatSettings : TFormatSettings) : Boolean');
  CL.AddDelphiFunction('Function DateTimeToTimeStamp( DateTime : TDateTime) : TTimeStamp');
  CL.AddDelphiFunction('Function TimeStampToDateTime( const TimeStamp : TTimeStamp) : TDateTime');
  CL.AddDelphiFunction('Function MSecsToTimeStamp( MSecs : Extended) : TTimeStamp');
@@ -465,51 +249,25 @@ begin
  CL.AddDelphiFunction('Procedure ReplaceDate( var DateTime : TDateTime; const NewDate : TDateTime)');
  CL.AddDelphiFunction('Function IsLeapYear( Year : Word) : Boolean');
  CL.AddDelphiFunction('Function DateToStr( const DateTime : TDateTime) : string');
- CL.AddDelphiFunction('Function DateToStrEx( const DateTime : TDateTime; const FormatSettings : TFormatSettings) : string');
  CL.AddDelphiFunction('Function TimeToStr( const DateTime : TDateTime) : string');
- CL.AddDelphiFunction('Function TimeToStrEx( const DateTime : TDateTime; const FormatSettings : TFormatSettings) : string');
  CL.AddDelphiFunction('Function DateTimeToStr( const DateTime : TDateTime) : string');
- CL.AddDelphiFunction('Function DateTimeToStrEx( const DateTime : TDateTime; const FormatSettings : TFormatSettings) : string');
  CL.AddDelphiFunction('Function StrToDate( const S : string) : TDateTime');
- CL.AddDelphiFunction('Function StrToDateEx( const S : string; const FormatSettings : TFormatSettings) : TDateTime');
  CL.AddDelphiFunction('Function StrToDateDef( const S : string; const Default : TDateTime) : TDateTime');
- CL.AddDelphiFunction('Function StrToDateDefEx( const S : string; const Default : TDateTime; const FormatSettings : TFormatSettings) : TDateTime');
  CL.AddDelphiFunction('Function TryStrToDate( const S : string; out Value : TDateTime) : Boolean');
- CL.AddDelphiFunction('Function TryStrToDateEx( const S : string; out Value : TDateTime; const FormatSettings : TFormatSettings) : Boolean');
  CL.AddDelphiFunction('Function StrToTime( const S : string) : TDateTime');
- CL.AddDelphiFunction('Function StrToTimeEx( const S : string; const FormatSettings : TFormatSettings) : TDateTime');
  CL.AddDelphiFunction('Function StrToTimeDef( const S : string; const Default : TDateTime) : TDateTime');
- CL.AddDelphiFunction('Function StrToTimeDefEx( const S : string; const Default : TDateTime; const FormatSettings : TFormatSettings) : TDateTime');
  CL.AddDelphiFunction('Function TryStrToTime( const S : string; out Value : TDateTime) : Boolean');
- CL.AddDelphiFunction('Function TryStrToTimeEx( const S : string; out Value : TDateTime; const FormatSettings : TFormatSettings) : Boolean');
  CL.AddDelphiFunction('Function StrToDateTime( const S : string) : TDateTime');
- CL.AddDelphiFunction('Function StrToDateTimeEx( const S : string; const FormatSettings : TFormatSettings) : TDateTime');
  CL.AddDelphiFunction('Function StrToDateTimeDef( const S : string; const Default : TDateTime) : TDateTime');
- CL.AddDelphiFunction('Function StrToDateTimeDefEx( const S : string; const Default : TDateTime; const FormatSettings : TFormatSettings) : TDateTime');
  CL.AddDelphiFunction('Function TryStrToDateTime( const S : string; out Value : TDateTime) : Boolean');
- CL.AddDelphiFunction('Function TryStrToDateTimeEx( const S : string; out Value : TDateTime; const FormatSettings : TFormatSettings) : Boolean');
  CL.AddDelphiFunction('Function FormatDateTime( const Format : string; DateTime : TDateTime) : string');
- CL.AddDelphiFunction('Function FormatDateTimeEx( const Format : string; DateTime : TDateTime; const FormatSettings : TFormatSettings) : string');
  CL.AddDelphiFunction('Procedure DateTimeToString( var Result : string; const Format : string; DateTime : TDateTime)');
- CL.AddDelphiFunction('Procedure DateTimeToStringEx( var Result : string; const Format : string; DateTime : TDateTime; const FormatSettings : TFormatSettings)');
  CL.AddConstantN('MinDateTime','TDateTime').SetExtended( - 657434.0);
  CL.AddConstantN('MaxDateTime','TDateTime').SetExtended( 2958465.99999);
  CL.AddDelphiFunction('Function FloatToDateTime( const Value : Extended) : TDateTime');
  CL.AddDelphiFunction('Function TryFloatToDateTime( const Value : Extended; out AResult : TDateTime) : Boolean');
- CL.AddDelphiFunction('Function SysErrorMessage( ErrorCode : Integer) : string');
- CL.AddDelphiFunction('Function GetLocaleStr( Locale, LocaleType : Integer; const Default : string) : string');
- CL.AddDelphiFunction('Function GetLocaleChar( Locale, LocaleType : Integer; Default : Char) : Char');
- CL.AddDelphiFunction('Procedure GetFormatSettings');
- CL.AddDelphiFunction('Function InquireSignal( RtlSigNum : Integer) : TSignalState');
- CL.AddDelphiFunction('Procedure AbandonSignalHandler( RtlSigNum : Integer)');
- CL.AddDelphiFunction('Procedure HookSignal( RtlSigNum : Integer)');
- CL.AddDelphiFunction('Procedure UnhookSignal( RtlSigNum : Integer; OnlyIfHooked : Boolean)');
- CL.AddDelphiFunction('Procedure HookOSExceptions');
- CL.AddDelphiFunction('Procedure SetSafeCallExceptionMsg( const Msg : String)');
- CL.AddDelphiFunction('Function GetSafeCallExceptionMsg : String');
  CL.AddDelphiFunction('Procedure Sleep( milliseconds : Cardinal)');
  CL.AddDelphiFunction('Procedure Abort');
- CL.AddDelphiFunction('Procedure OutOfMemoryError');
  CL.AddDelphiFunction('Procedure Beep');
  CL.AddDelphiFunction('Function ByteType( const S : string; Index : Integer) : TMbcsByteType');
  CL.AddDelphiFunction('Function StrByteType( Str : PChar; Index : Cardinal) : TMbcsByteType');
@@ -540,11 +298,8 @@ begin
  CL.AddTypeS('TReplaceFlags', 'set of TRepFlag');
  CL.AddDelphiFunction('Function StringReplace( const S, OldPattern, NewPattern : string; Flags : TReplaceFlags) : string');
  CL.AddDelphiFunction('Function WrapText( const Line, BreakStr : string; const BreakChars : TSysCharSet; MaxCol : Integer) : string');
- CL.AddDelphiFunction('Function WrapText( const Line : string; MaxCol : Integer) : string');
 
  CL.AddDelphiFunction('Function FindCmdLineSwitch( const Switch : string; const Chars : TSysCharSet; IgnoreCase : Boolean) : Boolean');
- CL.AddDelphiFunction('Function FindCmdLineSwitch( const Switch : string) : Boolean');
- CL.AddDelphiFunction('Function FindCmdLineSwitch( const Switch : string; IgnoreCase : Boolean) : Boolean');
  CL.AddDelphiFunction('Function CreateGUID( out Guid : TGUID) : HResult');
  CL.AddDelphiFunction('Function StringToGUID( const S : string) : TGUID');
  CL.AddDelphiFunction('Function GUIDToString( const GUID : TGUID) : string');
@@ -562,38 +317,7 @@ begin
  CL.AddConstantN('pfBCB4Produced','LongWord').SetUInt( $08000000);
  CL.AddConstantN('pfDelphi4Produced','LongWord').SetUInt( $0C000000);
  CL.AddConstantN('pfLibraryModule','LongWord').SetUInt( $80000000);
-  SIRegister_IReadWriteSync(CL);
-  SIRegister_TSimpleRWSync(CL);
-  SIRegister_TMultiReadExclusiveWriteSynchronizer(CL);
-  CL.AddTypeS('TMultiReadExclusiveWriteSynchronizer', 'TSimpleRWSync');
-  CL.AddTypeS('TMREWSync', 'TMultiReadExclusiveWriteSynchronizer');
- CL.AddDelphiFunction('Function GetEnvironmentVariable( const Name : string) : string');
- CL.AddDelphiFunction('Function InterlockedIncrement( var I : Integer) : Integer');
- CL.AddDelphiFunction('Function InterlockedDecrement( var I : Integer) : Integer');
- CL.AddDelphiFunction('Function InterlockedExchange( var A : Integer; B : Integer) : Integer');
- CL.AddDelphiFunction('Function InterlockedExchangeAdd( var A : Integer; B : Integer) : Integer');
 end;
-
-(* === run-time registration functions === *)
-(*----------------------------------------------------------------------------*)
-procedure TMultiReadExclusiveWriteSynchronizerRevisionLevel_R(Self: TMultiReadExclusiveWriteSynchronizer; var T: Cardinal);
-begin T := Self.RevisionLevel; end;
-
-(*----------------------------------------------------------------------------*)
-procedure EOSErrorErrorCode_W(Self: EOSError; const T: DWORD);
-Begin Self.ErrorCode := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure EOSErrorErrorCode_R(Self: EOSError; var T: DWORD);
-Begin T := Self.ErrorCode; end;
-
-(*----------------------------------------------------------------------------*)
-procedure EInOutErrorErrorCode_W(Self: EInOutError; const T: Integer);
-Begin Self.ErrorCode := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure EInOutErrorErrorCode_R(Self: EInOutError; var T: Integer);
-Begin T := Self.ErrorCode; end;
 
 (*----------------------------------------------------------------------------*)
 procedure ExceptionMessage_W(Self: Exception; const T: string);
@@ -612,73 +336,13 @@ procedure ExceptionHelpContext_R(Self: Exception; var T: Integer);
 begin T := Self.HelpContext; end;
 
 (*----------------------------------------------------------------------------*)
-procedure TLanguagesExt_R(Self: TLanguages; var T: string; const t1: Integer);
-begin T := Self.Ext[t1]; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TLanguagesLocaleID_R(Self: TLanguages; var T: LCID; const t1: Integer);
-begin T := Self.LocaleID[t1]; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TLanguagesID_R(Self: TLanguages; var T: string; const t1: Integer);
-begin T := Self.ID[t1]; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TLanguagesNameFromLCID_R(Self: TLanguages; var T: string; const t1: string);
-begin T := Self.NameFromLCID[t1]; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TLanguagesNameFromLocaleID_R(Self: TLanguages; var T: string; const t1: LCID);
-begin T := Self.NameFromLocaleID[t1]; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TLanguagesName_R(Self: TLanguages; var T: string; const t1: Integer);
-begin T := Self.Name[t1]; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TLanguagesCount_R(Self: TLanguages; var T: Integer);
-begin T := Self.Count; end;
-
-(*----------------------------------------------------------------------------*)
-procedure RIRegister_TMultiReadExclusiveWriteSynchronizer(CL: TPSRuntimeClassImporter);
-begin
-  with CL.Add(TMultiReadExclusiveWriteSynchronizer) do
-  begin
-    RegisterConstructor(@TMultiReadExclusiveWriteSynchronizer.Create, 'Create');
-    RegisterMethod(@TMultiReadExclusiveWriteSynchronizer.BeginRead, 'BeginRead');
-    RegisterMethod(@TMultiReadExclusiveWriteSynchronizer.EndRead, 'EndRead');
-    RegisterMethod(@TMultiReadExclusiveWriteSynchronizer.BeginWrite, 'BeginWrite');
-    RegisterMethod(@TMultiReadExclusiveWriteSynchronizer.EndWrite, 'EndWrite');
-    RegisterPropertyHelper(@TMultiReadExclusiveWriteSynchronizerRevisionLevel_R,nil,'RevisionLevel');
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure RIRegister_TSimpleRWSync(CL: TPSRuntimeClassImporter);
-begin
-  with CL.Add(TSimpleRWSync) do
-  begin
-    RegisterConstructor(@TSimpleRWSync.Create, 'Create');
-    RegisterMethod(@TSimpleRWSync.BeginRead, 'BeginRead');
-    RegisterMethod(@TSimpleRWSync.EndRead, 'EndRead');
-    RegisterMethod(@TSimpleRWSync.BeginWrite, 'BeginWrite');
-    RegisterMethod(@TSimpleRWSync.EndWrite, 'EndWrite');
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
 procedure RIRegister_SysUtils_Routines(S: TPSExec);
 begin
  S.RegisterDelphiFunction(@CheckWin32Version, 'CheckWin32Version', cdRegister);
  S.RegisterDelphiFunction(@GetFileVersion, 'GetFileVersion', cdRegister);
- S.RegisterDelphiFunction(@Languages, 'Languages', cdRegister);
- S.RegisterDelphiFunction(@UpperCase, 'UpperCase', cdRegister);
- S.RegisterDelphiFunction(@LowerCase, 'LowerCase', cdRegister);
  S.RegisterDelphiFunction(@CompareStr, 'CompareStr', cdRegister);
  S.RegisterDelphiFunction(@CompareText, 'CompareText', cdRegister);
  S.RegisterDelphiFunction(@SameText, 'SameText', cdRegister);
- S.RegisterDelphiFunction(@AnsiUpperCase, 'AnsiUpperCase', cdRegister);
- S.RegisterDelphiFunction(@AnsiLowerCase, 'AnsiLowerCase', cdRegister);
  S.RegisterDelphiFunction(@AnsiCompareStr, 'AnsiCompareStr', cdRegister);
  S.RegisterDelphiFunction(@AnsiSameStr, 'AnsiSameStr', cdRegister);
  S.RegisterDelphiFunction(@AnsiCompareText, 'AnsiCompareText', cdRegister);
@@ -697,27 +361,14 @@ begin
  S.RegisterDelphiFunction(@WideSameStr, 'WideSameStr', cdRegister);
  S.RegisterDelphiFunction(@WideCompareText, 'WideCompareText', cdRegister);
  S.RegisterDelphiFunction(@WideSameText, 'WideSameText', cdRegister);
- S.RegisterDelphiFunction(@Trim, 'Trim', cdRegister);
- S.RegisterDelphiFunction(@Trim, 'TrimWide', cdRegister);
- S.RegisterDelphiFunction(@TrimLeft, 'TrimLeft', cdRegister);
- S.RegisterDelphiFunction(@TrimLeft, 'TrimLeftWide', cdRegister);
- S.RegisterDelphiFunction(@TrimRight, 'TrimRight', cdRegister);
- S.RegisterDelphiFunction(@TrimRight, 'TrimRightWide', cdRegister);
  S.RegisterDelphiFunction(@QuotedStr, 'QuotedStr', cdRegister);
  S.RegisterDelphiFunction(@AnsiQuotedStr, 'AnsiQuotedStr', cdRegister);
  S.RegisterDelphiFunction(@AnsiExtractQuotedStr, 'AnsiExtractQuotedStr', cdRegister);
  S.RegisterDelphiFunction(@AnsiDequotedStr, 'AnsiDequotedStr', cdRegister);
  S.RegisterDelphiFunction(@AdjustLineBreaks, 'AdjustLineBreaks', cdRegister);
  S.RegisterDelphiFunction(@IsValidIdent, 'IsValidIdent', cdRegister);
- S.RegisterDelphiFunction(@IntToStr, 'IntToStr', cdRegister);
- S.RegisterDelphiFunction(@IntToStr, 'Int64ToStr', cdRegister);
  S.RegisterDelphiFunction(@IntToHex, 'IntToHex', cdRegister);
- S.RegisterDelphiFunction(@IntToHex, 'Int64ToHex', cdRegister);
- S.RegisterDelphiFunction(@StrToInt, 'StrToInt', cdRegister);
- S.RegisterDelphiFunction(@StrToIntDef, 'StrToIntDef', cdRegister);
  S.RegisterDelphiFunction(@TryStrToInt, 'TryStrToInt', cdRegister);
- S.RegisterDelphiFunction(@StrToInt64, 'StrToInt64', cdRegister);
- S.RegisterDelphiFunction(@StrToInt64Def, 'StrToInt64Def', cdRegister);
  S.RegisterDelphiFunction(@TryStrToInt64, 'TryStrToInt64', cdRegister);
  S.RegisterDelphiFunction(@StrToBool, 'StrToBool', cdRegister);
  S.RegisterDelphiFunction(@StrToBoolDef, 'StrToBoolDef', cdRegister);
@@ -727,7 +378,6 @@ begin
  S.RegisterDelphiFunction(@FmtLoadStr, 'FmtLoadStr', cdRegister);
  S.RegisterDelphiFunction(@FileOpen, 'FileOpen', cdRegister);
  S.RegisterDelphiFunction(@FileCreate, 'FileCreate', cdRegister);
- S.RegisterDelphiFunction(@FileCreate, 'FileCreateWithRights', cdRegister);
  S.RegisterDelphiFunction(@FileSeek, 'FileSeek', cdRegister);
  S.RegisterDelphiFunction(@FileClose, 'FileClose', cdRegister);
  S.RegisterDelphiFunction(@FileAge, 'FileAge', cdRegister);
@@ -739,9 +389,6 @@ begin
  S.RegisterDelphiFunction(@FindClose, 'FindClose', cdRegister);
  S.RegisterDelphiFunction(@FileGetDate, 'FileGetDate', cdRegister);
  S.RegisterDelphiFunction(@FileSetDate, 'FileSetDate', cdRegister);
- S.RegisterDelphiFunction(@FileSetDate, 'FileSetDateH', cdRegister);
- S.RegisterDelphiFunction(@FileGetAttr, 'FileGetAttr', cdRegister);
- S.RegisterDelphiFunction(@FileSetAttr, 'FileSetAttr', cdRegister);
  S.RegisterDelphiFunction(@FileIsReadOnly, 'FileIsReadOnly', cdRegister);
  S.RegisterDelphiFunction(@FileSetReadOnly, 'FileSetReadOnly', cdRegister);
  S.RegisterDelphiFunction(@DeleteFile, 'DeleteFile', cdRegister);
@@ -766,72 +413,27 @@ begin
  S.RegisterDelphiFunction(@SetCurrentDir, 'SetCurrentDir', cdRegister);
  S.RegisterDelphiFunction(@CreateDir, 'CreateDir', cdRegister);
  S.RegisterDelphiFunction(@RemoveDir, 'RemoveDir', cdRegister);
- S.RegisterDelphiFunction(@StrLen, 'StrLen', cdRegister);
- S.RegisterDelphiFunction(@StrEnd, 'StrEnd', cdRegister);
- S.RegisterDelphiFunction(@StrMove, 'StrMove', cdRegister);
- S.RegisterDelphiFunction(@StrCopy, 'StrCopy', cdRegister);
- S.RegisterDelphiFunction(@StrECopy, 'StrECopy', cdRegister);
- S.RegisterDelphiFunction(@StrLCopy, 'StrLCopy', cdRegister);
- S.RegisterDelphiFunction(@StrPCopy, 'StrPCopy', cdRegister);
- S.RegisterDelphiFunction(@StrPLCopy, 'StrPLCopy', cdRegister);
- S.RegisterDelphiFunction(@StrCat, 'StrCat', cdRegister);
- S.RegisterDelphiFunction(@StrLCat, 'StrLCat', cdRegister);
- S.RegisterDelphiFunction(@StrComp, 'StrComp', cdRegister);
- S.RegisterDelphiFunction(@StrIComp, 'StrIComp', cdRegister);
- S.RegisterDelphiFunction(@StrLComp, 'StrLComp', cdRegister);
- S.RegisterDelphiFunction(@StrLIComp, 'StrLIComp', cdRegister);
- S.RegisterDelphiFunction(@StrScan, 'StrScan', cdRegister);
- S.RegisterDelphiFunction(@StrRScan, 'StrRScan', cdRegister);
- S.RegisterDelphiFunction(@StrPos, 'StrPos', cdRegister);
- S.RegisterDelphiFunction(@StrUpper, 'StrUpper', cdRegister);
- S.RegisterDelphiFunction(@StrLower, 'StrLower', cdRegister);
- S.RegisterDelphiFunction(@StrPas, 'StrPas', cdRegister);
- S.RegisterDelphiFunction(@StrAlloc, 'StrAlloc', cdRegister);
- S.RegisterDelphiFunction(@StrBufSize, 'StrBufSize', cdRegister);
- S.RegisterDelphiFunction(@StrNew, 'StrNew', cdRegister);
- S.RegisterDelphiFunction(@StrDispose, 'StrDispose', cdRegister);
  S.RegisterDelphiFunction(@Format, 'Format', cdRegister);
- S.RegisterDelphiFunction(@Format, 'FormatEx', cdRegister);
  S.RegisterDelphiFunction(@FmtStr, 'FmtStr', cdRegister);
- S.RegisterDelphiFunction(@FmtStr, 'FmtStrEx', cdRegister);
  S.RegisterDelphiFunction(@StrFmt, 'StrFmt', cdRegister);
- S.RegisterDelphiFunction(@StrFmt, 'StrFmtEx', cdRegister);
  S.RegisterDelphiFunction(@StrLFmt, 'StrLFmt', cdRegister);
- S.RegisterDelphiFunction(@StrLFmt, 'StrLFmtEx', cdRegister);
  S.RegisterDelphiFunction(@WideFormat, 'WideFormat', cdRegister);
- S.RegisterDelphiFunction(@WideFormat, 'WideFormatEx', cdRegister);
  S.RegisterDelphiFunction(@WideFmtStr, 'WideFmtStr', cdRegister);
- S.RegisterDelphiFunction(@WideFmtStr, 'WideFmtStrEx', cdRegister);
  S.RegisterDelphiFunction(@FloatToStr, 'FloatToStr', cdRegister);
- S.RegisterDelphiFunction(@FloatToStr, 'FloatToStrEx', cdRegister);
  S.RegisterDelphiFunction(@CurrToStr, 'CurrToStr', cdRegister);
- S.RegisterDelphiFunction(@CurrToStr, 'CurrToStrEx', cdRegister);
  S.RegisterDelphiFunction(@FloatToCurr, 'FloatToCurr', cdRegister);
  S.RegisterDelphiFunction(@TryFloatToCurr, 'TryFloatToCurr', cdRegister);
  S.RegisterDelphiFunction(@FloatToStrF, 'FloatToStrF', cdRegister);
- S.RegisterDelphiFunction(@FloatToStrF, 'FloatToStrFEx', cdRegister);
  S.RegisterDelphiFunction(@CurrToStrF, 'CurrToStrF', cdRegister);
- S.RegisterDelphiFunction(@CurrToStrF, 'CurrToStrFEx', cdRegister);
  S.RegisterDelphiFunction(@FormatFloat, 'FormatFloat', cdRegister);
- S.RegisterDelphiFunction(@FormatFloat, 'FormatFloatEx', cdRegister);
  S.RegisterDelphiFunction(@FormatCurr, 'FormatCurr', cdRegister);
- S.RegisterDelphiFunction(@FormatCurr, 'FormatCurrEx', cdRegister);
- S.RegisterDelphiFunction(@StrToFloat, 'StrToFloat', cdRegister);
- S.RegisterDelphiFunction(@StrToFloat, 'StrToFloatEx', cdRegister);
  S.RegisterDelphiFunction(@StrToFloatDef, 'StrToFloatDef', cdRegister);
- S.RegisterDelphiFunction(@StrToFloatDef, 'StrToFloatDefEx', cdRegister);
  S.RegisterDelphiFunction(@TryStrToFloat, 'TryStrToFloat', cdRegister);
- S.RegisterDelphiFunction(@TryStrToFloat, 'TryStrToFloatEx', cdRegister);
  S.RegisterDelphiFunction(@TryStrToFloat, 'TryStrToFloat', cdRegister);
- S.RegisterDelphiFunction(@TryStrToFloat, 'TryStrToFloatEx', cdRegister);
  S.RegisterDelphiFunction(@TryStrToFloat, 'TryStrToFloat', cdRegister);
- S.RegisterDelphiFunction(@TryStrToFloat, 'TryStrToFloatEx', cdRegister);
  S.RegisterDelphiFunction(@StrToCurr, 'StrToCurr', cdRegister);
- S.RegisterDelphiFunction(@StrToCurr, 'StrToCurrEx', cdRegister);
  S.RegisterDelphiFunction(@StrToCurrDef, 'StrToCurrDef', cdRegister);
- S.RegisterDelphiFunction(@StrToCurrDef, 'StrToCurrDefEx', cdRegister);
  S.RegisterDelphiFunction(@TryStrToCurr, 'TryStrToCurr', cdRegister);
- S.RegisterDelphiFunction(@TryStrToCurr, 'TryStrToCurrEx', cdRegister);
  S.RegisterDelphiFunction(@DateTimeToTimeStamp, 'DateTimeToTimeStamp', cdRegister);
  S.RegisterDelphiFunction(@TimeStampToDateTime, 'TimeStampToDateTime', cdRegister);
  S.RegisterDelphiFunction(@MSecsToTimeStamp, 'MSecsToTimeStamp', cdRegister);
@@ -855,42 +457,24 @@ begin
  S.RegisterDelphiFunction(@ReplaceDate, 'ReplaceDate', cdRegister);
  S.RegisterDelphiFunction(@IsLeapYear, 'IsLeapYear', cdRegister);
  S.RegisterDelphiFunction(@DateToStr, 'DateToStr', cdRegister);
- S.RegisterDelphiFunction(@DateToStr, 'DateToStrEx', cdRegister);
  S.RegisterDelphiFunction(@TimeToStr, 'TimeToStr', cdRegister);
- S.RegisterDelphiFunction(@TimeToStr, 'TimeToStrEx', cdRegister);
  S.RegisterDelphiFunction(@DateTimeToStr, 'DateTimeToStr', cdRegister);
- S.RegisterDelphiFunction(@DateTimeToStr, 'DateTimeToStrEx', cdRegister);
  S.RegisterDelphiFunction(@StrToDate, 'StrToDate', cdRegister);
- S.RegisterDelphiFunction(@StrToDate, 'StrToDateEx', cdRegister);
  S.RegisterDelphiFunction(@StrToDateDef, 'StrToDateDef', cdRegister);
- S.RegisterDelphiFunction(@StrToDateDef, 'StrToDateDefEx', cdRegister);
  S.RegisterDelphiFunction(@TryStrToDate, 'TryStrToDate', cdRegister);
- S.RegisterDelphiFunction(@TryStrToDate, 'TryStrToDateEx', cdRegister);
  S.RegisterDelphiFunction(@StrToTime, 'StrToTime', cdRegister);
- S.RegisterDelphiFunction(@StrToTime, 'StrToTimeEx', cdRegister);
  S.RegisterDelphiFunction(@StrToTimeDef, 'StrToTimeDef', cdRegister);
- S.RegisterDelphiFunction(@StrToTimeDef, 'StrToTimeDefEx', cdRegister);
  S.RegisterDelphiFunction(@TryStrToTime, 'TryStrToTime', cdRegister);
- S.RegisterDelphiFunction(@TryStrToTime, 'TryStrToTimeEx', cdRegister);
  S.RegisterDelphiFunction(@StrToDateTime, 'StrToDateTime', cdRegister);
- S.RegisterDelphiFunction(@StrToDateTime, 'StrToDateTimeEx', cdRegister);
  S.RegisterDelphiFunction(@StrToDateTimeDef, 'StrToDateTimeDef', cdRegister);
- S.RegisterDelphiFunction(@StrToDateTimeDef, 'StrToDateTimeDefEx', cdRegister);
  S.RegisterDelphiFunction(@TryStrToDateTime, 'TryStrToDateTime', cdRegister);
- S.RegisterDelphiFunction(@TryStrToDateTime, 'TryStrToDateTimeEx', cdRegister);
  S.RegisterDelphiFunction(@FormatDateTime, 'FormatDateTime', cdRegister);
- S.RegisterDelphiFunction(@FormatDateTime, 'FormatDateTimeEx', cdRegister);
  S.RegisterDelphiFunction(@DateTimeToString, 'DateTimeToString', cdRegister);
- S.RegisterDelphiFunction(@DateTimeToString, 'DateTimeToStringEx', cdRegister);
  S.RegisterDelphiFunction(@FloatToDateTime, 'FloatToDateTime', cdRegister);
  S.RegisterDelphiFunction(@TryFloatToDateTime, 'TryFloatToDateTime', cdRegister);
  S.RegisterDelphiFunction(@SysErrorMessage, 'SysErrorMessage', cdRegister);
- S.RegisterDelphiFunction(@GetLocaleStr, 'GetLocaleStr', cdRegister);
- S.RegisterDelphiFunction(@GetLocaleChar, 'GetLocaleChar', cdRegister);
- S.RegisterDelphiFunction(@GetFormatSettings, 'GetFormatSettings', cdRegister);
  S.RegisterDelphiFunction(@Sleep, 'Sleep', CdStdCall);
  S.RegisterDelphiFunction(@Abort, 'Abort', cdRegister);
- S.RegisterDelphiFunction(@OutOfMemoryError, 'OutOfMemoryError', cdRegister);
  S.RegisterDelphiFunction(@Beep, 'Beep', cdRegister);
  S.RegisterDelphiFunction(@ByteType, 'ByteType', cdRegister);
  S.RegisterDelphiFunction(@StrByteType, 'StrByteType', cdRegister);
@@ -919,9 +503,6 @@ begin
  S.RegisterDelphiFunction(@AnsiStrScan, 'AnsiStrScan', cdRegister);
  S.RegisterDelphiFunction(@StringReplace, 'StringReplace', cdRegister);
  S.RegisterDelphiFunction(@WrapText, 'WrapText', cdRegister);
- S.RegisterDelphiFunction(@WrapText, 'WrapText', cdRegister);
- S.RegisterDelphiFunction(@FindCmdLineSwitch, 'FindCmdLineSwitch', cdRegister);
- S.RegisterDelphiFunction(@FindCmdLineSwitch, 'FindCmdLineSwitch', cdRegister);
  S.RegisterDelphiFunction(@FindCmdLineSwitch, 'FindCmdLineSwitch', cdRegister);
  S.RegisterDelphiFunction(@Supports, 'Supports', cdRegister);
  S.RegisterDelphiFunction(@Supports, 'Supports', cdRegister);
@@ -930,40 +511,6 @@ begin
  S.RegisterDelphiFunction(@StringToGUID, 'StringToGUID', cdRegister);
  S.RegisterDelphiFunction(@GUIDToString, 'GUIDToString', cdRegister);
  S.RegisterDelphiFunction(@IsEqualGUID, 'IsEqualGUID', CdStdCall);
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure RIRegister_EOSError(CL: TPSRuntimeClassImporter);
-begin
-  with CL.Add(EOSError) do
-  begin
-    RegisterPropertyHelper(@EOSErrorErrorCode_R,@EOSErrorErrorCode_W,'ErrorCode');
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure RIRegister_EAbstractError(CL: TPSRuntimeClassImporter);
-begin
-  with CL.Add(EAbstractError) do
-  begin
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure RIRegister_EInOutError(CL: TPSRuntimeClassImporter);
-begin
-  with CL.Add(EInOutError) do
-  begin
-    RegisterPropertyHelper(@EInOutErrorErrorCode_R,@EInOutErrorErrorCode_W,'ErrorCode');
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure RIRegister_EHeapException(CL: TPSRuntimeClassImporter);
-begin
-  with CL.Add(EHeapException) do
-  begin
-  end;
 end;
 
 (*----------------------------------------------------------------------------*)
@@ -989,31 +536,11 @@ begin
 end;
 
 (*----------------------------------------------------------------------------*)
-procedure RIRegister_TLanguages(CL: TPSRuntimeClassImporter);
-begin
-  with CL.Add(TLanguages) do
-  begin
-    RegisterConstructor(@TLanguages.Create, 'Create');
-    RegisterMethod(@TLanguages.IndexOf, 'IndexOf');
-    RegisterPropertyHelper(@TLanguagesCount_R,nil,'Count');
-    RegisterPropertyHelper(@TLanguagesName_R,nil,'Name');
-    RegisterPropertyHelper(@TLanguagesNameFromLocaleID_R,nil,'NameFromLocaleID');
-    RegisterPropertyHelper(@TLanguagesNameFromLCID_R,nil,'NameFromLCID');
-    RegisterPropertyHelper(@TLanguagesID_R,nil,'ID');
-    RegisterPropertyHelper(@TLanguagesLocaleID_R,nil,'LocaleID');
-    RegisterPropertyHelper(@TLanguagesExt_R,nil,'Ext');
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
 procedure RIRegister_SysUtils(CL: TPSRuntimeClassImporter);
 begin
-  RIRegister_TLanguages(CL);
   RIRegister_Exception(CL);
   with CL.Add(EAbort) do
-  RIRegister_EHeapException(CL);
   with CL.Add(EOutOfMemory) do
-  RIRegister_EInOutError(CL);
   with CL.Add(EIntError) do
   with CL.Add(EDivByZero) do
   with CL.Add(ERangeError) do
@@ -1034,7 +561,6 @@ begin
   with CL.Add(EPropReadOnly) do
   with CL.Add(EPropWriteOnly) do
   with CL.Add(EAssertionFailed) do
-  RIRegister_EAbstractError(CL);
   with CL.Add(EIntfCastError) do
   with CL.Add(EInvalidContainer) do
   with CL.Add(EInvalidInsert) do
