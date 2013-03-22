@@ -11,9 +11,15 @@ uses
   SynEditMiscClasses, SynEditSearch, SynEditRegexSearch, SynEditTypes, SearchUtils;
 
 type
+  TMessageCoord = class
+    Col, Row: Integer;
+
+    class function NewFrom(ACol, ARow: Integer): TMessageCoord;
+  end;
+
   TFrm_Editor = class(TForm)
     Splitter1: TSplitter;
-    Messages: TMemo;
+    Messages: TListBox;
     Editor: TSynEdit;
     SynPasSyn: TSynPasSyn;
     PSScriptDebugger: TPSScriptDebugger;
@@ -103,11 +109,13 @@ type
     procedure acReplaceExecute(Sender: TObject);
     procedure EditorReplaceText(Sender: TObject; const ASearch,
       AReplace: string; Line, Column: Integer; var Action: TSynReplaceAction);
+    procedure MessagesDblClick(Sender: TObject);
   private
     FActiveFile: TFileName;
     FActiveLine: LongInt;
     FResume: Boolean;
     FSearchOptions: TSearchOptions;
+    FErrorLine: Integer;
 
     function Compile: Boolean;
     function SaveCheck: Boolean;
@@ -121,6 +129,9 @@ type
     procedure LoadFromFile(AFileName: string);
 
     procedure ExecuteSearch(AReplace: Boolean);
+
+    procedure ClearMessages;
+    procedure AddMessage(const AMessage: String; ACoord: TMessageCoord = nil);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -262,10 +273,10 @@ begin
   begin
     if PSScriptDebugger.Execute then
     begin
-      Messages.Lines.Add(sSuccessfullyExecuted);
+      AddMessage(sSuccessfullyExecuted);
     end else
     begin
-      Messages.Lines.Add(Format(sRuntimeError,
+      AddMessage(Format(sRuntimeError,
                                 ['[empty]', PSScriptDebugger.ExecErrorRow, PSScriptDebugger.ExecErrorCol,
                                  PSScriptDebugger.ExecErrorProcNo, PSScriptDebugger.ExecErrorByteCodePosition,
                                  PSScriptDebugger.ExecErrorToString]));
@@ -328,17 +339,33 @@ begin
   end;
 end;
 
+procedure TFrm_Editor.AddMessage(const AMessage: String; ACoord: TMessageCoord);
+begin
+  Messages.Items.AddObject(AMessage, ACoord);
+end;
+
+procedure TFrm_Editor.ClearMessages;
+var
+  i: Integer;
+begin
+  for i := Messages.Items.Count-1 downto 0 do
+  begin
+    Messages.Items.Objects[i].Free;
+  end;
+  Messages.Items.Clear;
+end;
+
 function TFrm_Editor.Compile: Boolean;
 var
   i: Integer;
   vErrorFound: Boolean;
   vMessage: TPSPascalCompilerMessage;
 begin
-  Messages.Lines.Clear;
+  ClearMessages;
 
   PSScriptDebugger.Script.Assign(Editor.Lines);
 
-  Messages.Lines.Add(sBeginCompile);
+  AddMessage(sBeginCompile);
 
   Result := PSScriptDebugger.Compile;
 
@@ -348,7 +375,7 @@ begin
   begin
     vMessage := PSScriptDebugger.CompilerMessages[i];
 
-    Messages.Lines.Add(String(vMessage.MessageToString));
+    AddMessage(String(vMessage.MessageToString), TMessageCoord.NewFrom(vMessage.Col, vMessage.Row));
 
     if not vErrorFound and (vMessage is TIFPSPascalCompilerError) then
     begin
@@ -516,7 +543,14 @@ procedure TFrm_Editor.EditorSpecialLineColors(Sender: TObject; Line: Integer;
 begin
   Special := False;
 
-  if PSScriptDebugger.HasBreakPoint(PSScriptDebugger.MainFileName, Line) then
+  if Line = FErrorLine then
+  begin
+    Special := True;
+    FG := clWhite;
+    BG := clRed;
+    FErrorLine := -1;
+  end
+  else if PSScriptDebugger.HasBreakPoint(PSScriptDebugger.MainFileName, Line) then
   begin
     Special := True;
     if Line = FActiveLine then
@@ -590,17 +624,11 @@ var
 begin
   SynCompletionProposal.ItemList.Clear;
 
-  for i:= 0 to PSScriptDebugger.Comp.GetRegProcCount-1 do
+  for i := 0 to PSScriptDebugger.Comp.GetTypeCount-1 do
   begin
-    obj := PSScriptDebugger.Comp.GetRegProc(i);
+    obj_type := PSScriptDebugger.Comp.GetType(i);
 
-    vTemplate := sProcedureStyle;
-    if obj.Decl.Result <> nil then
-    begin
-      vTemplate := sFunctionStyle;
-    end;
-
-    SynCompletionProposal.AddItem(Format(vTemplate, [obj.OrgName, TPsUtils.GetMethodParametersDeclaration(obj.Decl)]), UnicodeString(obj.OrgName + '()'));
+    SynCompletionProposal.AddItem(Format(sTypeStyle, [obj_type.OriginalName, TPSUtils.GetPSTypeName(PSScriptDebugger, obj_type)]), UnicodeString(obj_type.OriginalName));
   end;
 
   for i:= 0 to PSScriptDebugger.Comp.GetVarCount-1 do
@@ -617,11 +645,17 @@ begin
    SynCompletionProposal.AddItem(Format(sConstStyle, [obj_const.OrgName, TPSUtils.GetAsString(PSScriptDebugger, obj_const.Value)]), UnicodeString(obj_const.OrgName));
   end;
 
-  for i := 0 to PSScriptDebugger.Comp.GetTypeCount-1 do
+  for i:= 0 to PSScriptDebugger.Comp.GetRegProcCount-1 do
   begin
-    obj_type := PSScriptDebugger.Comp.GetType(i);
+    obj := PSScriptDebugger.Comp.GetRegProc(i);
 
-    SynCompletionProposal.AddItem(Format(sTypeStyle, [obj_type.OriginalName, TPSUtils.GetPSTypeName(PSScriptDebugger, obj_type)]), UnicodeString(obj_type.OriginalName));
+    vTemplate := sProcedureStyle;
+    if obj.Decl.Result <> nil then
+    begin
+      vTemplate := sFunctionStyle;
+    end;
+
+    SynCompletionProposal.AddItem(Format(vTemplate, [obj.OrgName, TPsUtils.GetMethodParametersDeclaration(obj.Decl)]), UnicodeString(obj.OrgName + '()'));
   end;
 end;
 
@@ -639,6 +673,25 @@ begin
   FActiveFile := AFileName;
 
   UpdateStatusBar;
+end;
+
+procedure TFrm_Editor.MessagesDblClick(Sender: TObject);
+var
+  vMessageCoord: TMessageCoord;
+  a: Integer;
+begin
+  if Messages.ItemIndex >= 0 then
+  begin
+    if Messages.Items.Objects[Messages.ItemIndex] <> nil then
+    begin
+      vMessageCoord := TMessageCoord(Messages.Items.Objects[Messages.ItemIndex]);
+
+      Editor.SetFocus;
+      Editor.CaretX := vMessageCoord.Col;
+      Editor.CaretY := vMessageCoord.Row;
+      FErrorLine := vMessageCoord.Row;
+    end;
+  end;
 end;
 
 procedure TFrm_Editor.PSScript_Compile(Sender: TPSScript);
@@ -718,6 +771,15 @@ procedure TFrm_Editor.PSScript_Execute(Sender: TPSScript);
 begin
   Sender.SetVarToInstance('Application', Application);
   Sender.SetVarToInstance('Self', Self);
+end;
+
+{ TMessageCoord }
+
+class function TMessageCoord.NewFrom(ACol, ARow: Integer): TMessageCoord;
+begin
+  Result := TMessageCoord.Create;
+  Result.Col := ACol;
+  Result.Row := ARow;
 end;
 
 end.

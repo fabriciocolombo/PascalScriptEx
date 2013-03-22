@@ -26,16 +26,15 @@ object Frm_Editor: TFrm_Editor
     ExplicitTop = 327
     ExplicitWidth = 795
   end
-  object Messages: TMemo
+  object Messages: TListBox
     Left = 0
     Top = 438
     Width = 989
     Height = 89
     Align = alBottom
-    ReadOnly = True
-    ScrollBars = ssVertical
+    ItemHeight = 13
     TabOrder = 1
-    WordWrap = False
+    OnDblClick = MessagesDblClick
   end
   object Editor: TSynEdit
     Left = 0
