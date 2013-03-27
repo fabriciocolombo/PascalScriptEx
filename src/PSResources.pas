@@ -26,6 +26,8 @@ const
 
 type
   TPSUtils = class
+  private
+    class function SetToString(APsScript: TPSScript; AType: TPSSetType; const Value: PIfRVariant): String;
   public
     class function GetValue(AValue: PIfRVariant): Variant;
     class function GetAsString(APsScript: TPSScript; AValue: PIfRVariant): UnicodeString;
@@ -38,6 +40,8 @@ type
   end;
 
 implementation
+
+uses StrUtils;
 
 { TConstanstUtils }
 
@@ -56,7 +60,8 @@ begin
     btU16: Result := SysUtils.IntToStr(TbtU16(AValue^.tu16));
     btS16: Result := SysUtils.IntToStr(TbtS16(AValue^.ts16));
     btSet: begin
-             Result := 'set of ' + String(TPSSetType(AValue^.FType).SetType.OriginalName);
+             //-'set of ' + String(TPSSetType(AValue^.FType).SetType.OriginalName);
+             Result := SetToString(APsScript, TPSSetType(TPSSetType(AValue^.FType).SetType), AValue);
            end;
     btU32: Result := SysUtils.IntToStr(TbtU32(AValue^.tu32));
     btEnum: begin
@@ -235,6 +240,32 @@ begin
   else
     Result := varUnknown;
   end;
+end;
+
+class function TPSUtils.SetToString(APsScript: TPSScript; AType: TPSSetType; const Value: PIfRVariant): String;
+var
+  i: Integer;
+  vConst: TPSConstant;
+  vIntegerSet: TIntegerSet;
+begin
+  Result := EmptyStr;
+
+  vIntegerSet := TIntegerSet(Value^.tstring^);
+
+  for i := 0 to APsScript.Comp.GetConstCount-1 do
+  begin
+    vConst := APsScript.Comp.GetConst(i);
+
+    if (vConst.Value^.FType = AType) then
+    begin
+      if vConst.Value^.ts32 in vIntegerSet  then
+      begin
+        Result := Result + vConst.OrgName + ',';
+      end;
+    end;
+  end;
+
+  Result := '[' + LeftStr(Result, Length(Result)-1) + ']';
 end;
 
 end.

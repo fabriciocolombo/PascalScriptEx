@@ -225,12 +225,13 @@ object Frm_Editor: TFrm_Editor
     end
     object este1: TMenuItem
       Caption = 'Teste'
-      Visible = False
       object SaveCompile1: TMenuItem
         Caption = 'Save Compiled'
+        Visible = False
       end
       object LoadCompiled1: TMenuItem
         Caption = 'Load Compiled'
+        Visible = False
       end
     end
   end

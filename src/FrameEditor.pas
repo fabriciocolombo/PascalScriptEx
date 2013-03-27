@@ -640,7 +640,6 @@ begin
   for i:= 0 to PSScriptDebugger.Comp.GetVarCount-1 do
   begin
     obj_var := PSScriptDebugger.Comp.GetVar(i);
-
     SynCompletionProposal.AddItem(Format(sVariableStyle, [obj_var.OrgName, obj_var.aType.OriginalName]), UnicodeString(obj_var.OrgName));
   end;
 
